@@ -21,8 +21,14 @@ export default class UIScene extends Phaser.Scene {
     this.unlockCard = null;
     this.inventoryOverlay = null;
     this.inventoryListText = null;
+    this.inventoryPageText = null;
+    this.inventoryPrevButton = null;
+    this.inventoryNextButton = null;
+    this.inventoryPage = 0;
+    this.inventoryPageSize = 5;
+    this.checklistOverlay = null;
 
-    this.createInventoryButton();
+    this.createTopButtons();
 
     EventBus.on(EVENTS.OPEN_PUZZLE, (payload) => {
       this.openPuzzleOverlay(payload?.puzzle);
@@ -33,23 +39,55 @@ export default class UIScene extends Phaser.Scene {
       if (this.inventoryOverlay) {
         this.renderInventoryList();
       }
+      this.pulseButton(this.inventoryButton);
     });
   }
 
-  createInventoryButton() {
-    this.inventoryButton = this.add
-      .text(760, 18, "Archive", {
+  createTopButtons() {
+    this.inventoryButton = this.createButton(760, 18, "Archive", {
+      align: "right",
+    });
+    this.inventoryButton.on("pointerdown", () => this.toggleInventory());
+
+    this.checklistButton = this.createButton(670, 18, "Checklist", {
+      align: "right",
+    });
+    this.checklistButton.on("pointerdown", () => this.toggleChecklist());
+  }
+
+  createButton(x, y, label, { align = "left" } = {}) {
+    const button = this.add
+      .text(x, y, label, {
         fontFamily: "sans-serif",
         fontSize: "14px",
         color: "#0f172a",
         backgroundColor: "#f8fafc",
         padding: { left: 12, right: 12, top: 6, bottom: 6 },
       })
-      .setOrigin(1, 0)
+      .setOrigin(align === "right" ? 1 : 0, 0)
       .setInteractive({ useHandCursor: true });
 
-    this.inventoryButton.on("pointerdown", () => {
-      this.toggleInventory();
+    button.on("pointerover", () => {
+      button.setStyle({ backgroundColor: "#38bdf8", color: "#0b1020" });
+    });
+
+    button.on("pointerout", () => {
+      button.setStyle({ backgroundColor: "#f8fafc", color: "#0f172a" });
+    });
+
+    return button;
+  }
+
+  pulseButton(button) {
+    if (!button) {
+      return;
+    }
+    this.tweens.add({
+      targets: button,
+      scale: 1.08,
+      duration: 120,
+      yoyo: true,
+      ease: "Sine.Out",
     });
   }
 
@@ -66,6 +104,10 @@ export default class UIScene extends Phaser.Scene {
       return;
     }
 
+    if (this.checklistOverlay) {
+      this.closeChecklist();
+    }
+
     const overlay = this.add.container(0, 0);
     const backdrop = this.add
       .rectangle(0, 0, 800, 600, 0x0b1020, 0.85)
@@ -80,13 +122,41 @@ export default class UIScene extends Phaser.Scene {
     });
     title.setOrigin(0.5, 0.5);
 
-    this.inventoryListText = this.add.text(180, 190, "", {
+    const subtitle = this.add.text(400, 165, "Unlocked algorithms", {
+      fontFamily: "sans-serif",
+      fontSize: "14px",
+      color: "#94a3b8",
+    });
+    subtitle.setOrigin(0.5, 0.5);
+
+    this.inventoryListText = this.add.text(180, 200, "", {
       fontFamily: "sans-serif",
       fontSize: "16px",
       color: "#e2e8f0",
-      lineSpacing: 6,
+      lineSpacing: 8,
       wordWrap: { width: 440 },
     });
+
+    this.inventoryPageText = this.add.text(400, 430, "", {
+      fontFamily: "sans-serif",
+      fontSize: "12px",
+      color: "#94a3b8",
+    });
+    this.inventoryPageText.setOrigin(0.5, 0.5);
+
+    this.inventoryPrevButton = this.createButton(290, 440, "Prev");
+    this.inventoryNextButton = this.createButton(510, 440, "Next");
+    this.inventoryPrevButton.on("pointerdown", () => {
+      this.inventoryPage -= 1;
+      this.renderInventoryList();
+    });
+    this.inventoryNextButton.on("pointerdown", () => {
+      this.inventoryPage += 1;
+      this.renderInventoryList();
+    });
+
+    const closeButton = this.createButton(610, 120, "Close");
+    closeButton.on("pointerdown", () => this.closeInventory());
 
     const closeHint = this.add.text(400, 450, "Click to close", {
       fontFamily: "sans-serif",
@@ -95,12 +165,28 @@ export default class UIScene extends Phaser.Scene {
     });
     closeHint.setOrigin(0.5, 0.5);
 
-    overlay.add([backdrop, panel, title, this.inventoryListText, closeHint]);
-    overlay.setInteractive(
-      new Phaser.Geom.Rectangle(0, 0, 800, 600),
-      Phaser.Geom.Rectangle.Contains,
-    );
-    overlay.on("pointerdown", () => this.closeInventory());
+    overlay.add([
+      backdrop,
+      panel,
+      title,
+      subtitle,
+      this.inventoryListText,
+      this.inventoryPageText,
+      this.inventoryPrevButton,
+      this.inventoryNextButton,
+      closeButton,
+      closeHint,
+    ]);
+    backdrop.setInteractive({ useHandCursor: true });
+    backdrop.on("pointerdown", () => this.closeInventory());
+
+    overlay.setAlpha(0);
+    this.tweens.add({
+      targets: overlay,
+      alpha: 1,
+      duration: 160,
+      ease: "Sine.Out",
+    });
 
     this.inventoryOverlay = overlay;
     this.renderInventoryList();
@@ -113,6 +199,9 @@ export default class UIScene extends Phaser.Scene {
     this.inventoryOverlay.destroy(true);
     this.inventoryOverlay = null;
     this.inventoryListText = null;
+    this.inventoryPageText = null;
+    this.inventoryPrevButton = null;
+    this.inventoryNextButton = null;
   }
 
   renderInventoryList() {
@@ -122,14 +211,133 @@ export default class UIScene extends Phaser.Scene {
     const algorithms = archiveSystem.getAllAlgorithms();
     if (!algorithms.length) {
       this.inventoryListText.setText("No algorithms unlocked yet.");
+      if (this.inventoryPageText) {
+        this.inventoryPageText.setText("Page 0 of 0");
+      }
+      if (this.inventoryPrevButton) {
+        this.inventoryPrevButton.setVisible(false);
+      }
+      if (this.inventoryNextButton) {
+        this.inventoryNextButton.setVisible(false);
+      }
       return;
     }
 
-    const lines = algorithms.map((algo, index) => {
+    const totalPages = Math.max(
+      1,
+      Math.ceil(algorithms.length / this.inventoryPageSize),
+    );
+    this.inventoryPage = Phaser.Math.Clamp(
+      this.inventoryPage,
+      0,
+      totalPages - 1,
+    );
+    const start = this.inventoryPage * this.inventoryPageSize;
+    const end = start + this.inventoryPageSize;
+    const pageItems = algorithms.slice(start, end);
+
+    const lines = pageItems.map((algo, index) => {
       const label = algo?.name || "Unknown";
-      return `${index + 1}. ${label}`;
+      const description = algo?.description || "";
+      const number = start + index + 1;
+      if (description) {
+        return `${number}. ${label}\n   ${description}`;
+      }
+      return `${number}. ${label}`;
     });
     this.inventoryListText.setText(lines.join("\n"));
+
+    if (this.inventoryPageText) {
+      this.inventoryPageText.setText(
+        `Page ${this.inventoryPage + 1} of ${totalPages}`,
+      );
+    }
+    if (this.inventoryPrevButton) {
+      this.inventoryPrevButton.setVisible(totalPages > 1);
+    }
+    if (this.inventoryNextButton) {
+      this.inventoryNextButton.setVisible(totalPages > 1);
+    }
+  }
+
+  toggleChecklist() {
+    if (this.checklistOverlay) {
+      this.closeChecklist();
+    } else {
+      this.openChecklist();
+    }
+  }
+
+  openChecklist() {
+    if (this.checklistOverlay) {
+      return;
+    }
+
+    if (this.inventoryOverlay) {
+      this.closeInventory();
+    }
+
+    const overlay = this.add.container(0, 0);
+    const backdrop = this.add
+      .rectangle(0, 0, 800, 600, 0x0b1020, 0.85)
+      .setOrigin(0, 0);
+    const panel = this.add
+      .rectangle(400, 300, 520, 320, 0x1e293b, 0.95)
+      .setStrokeStyle(2, 0x38bdf8, 1);
+    const title = this.add.text(400, 170, "Done Checklist", {
+      fontFamily: "sans-serif",
+      fontSize: "22px",
+      color: "#f8fafc",
+    });
+    title.setOrigin(0.5, 0.5);
+
+    const checklistText = this.add.text(200, 210, "", {
+      fontFamily: "sans-serif",
+      fontSize: "16px",
+      color: "#e2e8f0",
+      lineSpacing: 8,
+      wordWrap: { width: 400 },
+    });
+    checklistText.setText(
+      [
+        "[ ] Walk + jump",
+        "[ ] Talk to an NPC",
+        "[ ] Open/close the puzzle overlay",
+        "[ ] Algorithm unlocked popup + archive entry",
+      ].join("\n"),
+    );
+
+    const note = this.add.text(400, 400, "Verify in play mode", {
+      fontFamily: "sans-serif",
+      fontSize: "12px",
+      color: "#94a3b8",
+    });
+    note.setOrigin(0.5, 0.5);
+
+    const closeButton = this.createButton(610, 160, "Close");
+    closeButton.on("pointerdown", () => this.closeChecklist());
+
+    overlay.add([backdrop, panel, title, checklistText, note, closeButton]);
+    backdrop.setInteractive({ useHandCursor: true });
+    backdrop.on("pointerdown", () => this.closeChecklist());
+
+    overlay.setAlpha(0);
+    this.tweens.add({
+      targets: overlay,
+      alpha: 1,
+      duration: 160,
+      ease: "Sine.Out",
+    });
+
+    this.checklistOverlay = overlay;
+  }
+
+  closeChecklist() {
+    if (!this.checklistOverlay) {
+      return;
+    }
+    this.checklistOverlay.destroy(true);
+    this.checklistOverlay = null;
   }
 
   openPuzzleOverlay(puzzle) {
@@ -139,6 +347,10 @@ export default class UIScene extends Phaser.Scene {
 
     if (this.inventoryOverlay) {
       this.closeInventory();
+    }
+
+    if (this.checklistOverlay) {
+      this.closeChecklist();
     }
 
     this.scene.pause("GameScene");
@@ -166,25 +378,8 @@ export default class UIScene extends Phaser.Scene {
     );
     subtitle.setOrigin(0.5, 0.5);
 
-    const solveButton = this.add
-      .text(300, 340, "Solve", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#0f172a",
-        backgroundColor: "#f8fafc",
-        padding: { left: 18, right: 18, top: 10, bottom: 10 },
-      })
-      .setInteractive({ useHandCursor: true });
-
-    const failButton = this.add
-      .text(430, 340, "Fail", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#0f172a",
-        backgroundColor: "#f8fafc",
-        padding: { left: 18, right: 18, top: 10, bottom: 10 },
-      })
-      .setInteractive({ useHandCursor: true });
+    const solveButton = this.createButton(300, 340, "Solve");
+    const failButton = this.createButton(430, 340, "Fail");
 
     solveButton.on("pointerdown", () => {
       EventBus.emit(EVENTS.PUZZLE_COMPLETE, {
