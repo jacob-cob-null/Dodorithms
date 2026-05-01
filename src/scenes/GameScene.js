@@ -1,8 +1,12 @@
 import Phaser from "phaser";
 import Player from "../entities/Player.js";
 import NPC from "../entities/NPC.js";
+import Interactable from "../entities/Interactable.js";
 import PlayerController from "../systems/PlayerController.js";
 import InteractionSystem from "../systems/InteractionSystem.js";
+import PuzzleSystem, { Puzzle } from "../systems/PuzzleSystem.js";
+import EventBus from "../systems/EventBus.js";
+import { EVENTS } from "../systems/events.js";
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -25,6 +29,30 @@ export default class GameScene extends Phaser.Scene {
       lines: ["Hey there, hatchling!", "Tap E to chat about algorithms."],
     });
     this.interactionSystem.register(npc);
+
+    this.puzzleSystem = new PuzzleSystem();
+    const euclidPuzzle = new Puzzle({
+      id: "euclid",
+      name: "Euclid's Algorithm",
+      description: "Find the GCD of two numbers.",
+    });
+    const puzzleNode = new Interactable(this, 620, 520, "interactable", {
+      id: "puzzle-1",
+      type: "puzzle",
+      data: { puzzle: euclidPuzzle },
+      onInteract: () => this.puzzleSystem.launch(euclidPuzzle),
+    });
+    this.interactionSystem.register(puzzleNode);
+
+    EventBus.on(EVENTS.START_DIALOGUE, () => {
+      this.playerController.setEnabled(false);
+      this.interactionSystem.setEnabled(false);
+    });
+
+    EventBus.on(EVENTS.END_DIALOGUE, () => {
+      this.playerController.setEnabled(true);
+      this.interactionSystem.setEnabled(true);
+    });
 
     this.add.text(16, 16, "Dodorithmic: scaffold", {
       fontFamily: "sans-serif",

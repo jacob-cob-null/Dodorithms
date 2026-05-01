@@ -7,6 +7,7 @@ export default class InteractionSystem {
     this.scene = scene;
     this.player = player;
     this.radius = radius;
+    this.enabled = true;
     this.interactables = [];
     this.currentTarget = null;
     this.interactKey = scene.input.keyboard.addKey("E");
@@ -16,7 +17,18 @@ export default class InteractionSystem {
     this.interactables.push(interactable);
   }
 
+  setEnabled(isEnabled) {
+    this.enabled = isEnabled;
+    if (!isEnabled) {
+      this.currentTarget = null;
+      EventBus.emit(EVENTS.HIDE_PROMPT);
+    }
+  }
+
   update() {
+    if (!this.enabled) {
+      return;
+    }
     const target = this.findNearest();
 
     if (target !== this.currentTarget) {
