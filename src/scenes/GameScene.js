@@ -7,6 +7,7 @@ import InteractionSystem from "../systems/InteractionSystem.js";
 import PuzzleSystem, { Puzzle } from "../systems/PuzzleSystem.js";
 import EventBus from "../systems/EventBus.js";
 import { EVENTS } from "../systems/events.js";
+import archiveSystem from "../systems/ArchiveSystem.js";
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -59,6 +60,8 @@ export default class GameScene extends Phaser.Scene {
       fontSize: "16px",
       color: "#e2e8f0",
     });
+
+    this.archiveSystem = archiveSystem;
   }
 
   update() {
