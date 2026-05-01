@@ -1,6 +1,8 @@
 import Phaser from "phaser";
 import Player from "../entities/Player.js";
+import NPC from "../entities/NPC.js";
 import PlayerController from "../systems/PlayerController.js";
+import InteractionSystem from "../systems/InteractionSystem.js";
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -17,6 +19,13 @@ export default class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.platforms);
     this.playerController = new PlayerController(this, this.player);
 
+    this.interactionSystem = new InteractionSystem(this, this.player);
+    const npc = new NPC(this, 420, 500, {
+      id: "npc-1",
+      lines: ["Hey there, hatchling!", "Tap E to chat about algorithms."],
+    });
+    this.interactionSystem.register(npc);
+
     this.add.text(16, 16, "Dodorithmic: scaffold", {
       fontFamily: "sans-serif",
       fontSize: "16px",
@@ -26,5 +35,6 @@ export default class GameScene extends Phaser.Scene {
 
   update() {
     this.playerController.update();
+    this.interactionSystem.update();
   }
 }
