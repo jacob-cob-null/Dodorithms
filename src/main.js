@@ -11,6 +11,9 @@ import MiddleSchool        from "./minigames/MiddleSchool.js";
 import SequentialSearch    from "./minigames/SequentialSearch.js";
 import MaxElement          from "./minigames/MaxElement.js";
 import ExhaustiveSearch    from "./minigames/ExhaustiveSearch.js";
+import SelectionSort       from "./minigames/SelectionSort.js";
+import BubbleSort          from "./minigames/BubbleSort.js";
+import BiologicalClearance from "./minigames/BiologicalClearance.js";
 
 const config = {
   type: Phaser.AUTO,
@@ -25,7 +28,7 @@ const config = {
       debug: false,
     },
   },
-  scene: [BootScene, MainMenuScene, GameScene, UIScene, ShatteredPad, GuestList, ConsecutiveInt, MiddleSchool, SequentialSearch, MaxElement, ExhaustiveSearch],
+  scene: [BootScene, MainMenuScene, GameScene, UIScene, ShatteredPad, GuestList, ConsecutiveInt, MiddleSchool, SequentialSearch, MaxElement, ExhaustiveSearch, SelectionSort, BubbleSort, BiologicalClearance],
 };
 
 new Phaser.Game(config);

@@ -34,4 +34,21 @@ export const ALGORITHMS = {
     name: 'Exhaustive Search',
     description: 'Try all n! permutations to guarantee the optimal solution.',
   },
+
+  // ── Level 3 ─────────────────────────────────────────────────────────────
+  SELECTION_SORT: {
+    id: 'selection-sort',
+    name: 'Selection Sort',
+    description: 'Repeatedly select the minimum and place it in sorted position. O(n²).',
+  },
+  BUBBLE_SORT: {
+    id: 'bubble-sort',
+    name: 'Bubble Sort',
+    description: 'Swap adjacent out-of-order pairs until no swaps remain. O(n²).',
+  },
+  BRUTE_FORCE_STRING: {
+    id: 'brute-force-string',
+    name: 'Brute-Force String Matching',
+    description: 'Slide the pattern across the text, comparing character by character.',
+  },
 };

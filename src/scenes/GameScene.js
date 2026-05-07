@@ -195,6 +195,7 @@ export default class GameScene extends Phaser.Scene {
 
     if (id === 'level1') this._drawLevel1Props(worldWidth);
     if (id === 'level2') this._drawLevel2Props(worldWidth);
+    if (id === 'level3') this._drawLevel3Props(worldWidth);
   }
 
   _drawStars(g, W) {
@@ -389,6 +390,65 @@ export default class GameScene extends Phaser.Scene {
     conduit.lineBetween(0, 2, W, 2);
     conduit.fillStyle(0x06b6d4, 0.06);
     conduit.fillRect(0, 0, W, 5);
+  }
+
+  _drawLevel3Props(W) {
+    // Bio-hazard floor stripe
+    const stripe = this.add.graphics();
+    for (let x = 0; x < W; x += 40) {
+      stripe.fillStyle(0x22c55e, 0.06);
+      stripe.fillRect(x, 548, 20, 8);
+    }
+
+    // Lab bench counters along the floor
+    [300, 650, 1050, 1550, 1900, 2300].forEach(bx => {
+      const bench = this.add.graphics();
+      bench.fillStyle(0x0c2a10, 1);
+      bench.fillRect(-40, -20, 80, 20);
+      bench.lineStyle(1, 0x22c55e, 0.4);
+      bench.strokeRect(-40, -20, 80, 20);
+      // Petri dishes / containers
+      for (let d = 0; d < 3; d++) {
+        bench.fillStyle(0x4ade80, 0.15 + d * 0.08);
+        bench.fillCircle(-22 + d * 22, -28, 8);
+        bench.lineStyle(1, 0x22c55e, 0.4);
+        bench.strokeCircle(-22 + d * 22, -28, 8);
+      }
+      bench.x = bx; bench.y = 552;
+    });
+
+    // DNA helix wall decorations
+    [150, 550, 1000, 1400, 1800, 2250].forEach(hx => {
+      const helix = this.add.graphics();
+      for (let y = 0; y < 6; y++) {
+        const wave = Math.sin(y * 1.2) * 8;
+        helix.fillStyle(0x22c55e, 0.2 + (y % 2) * 0.15);
+        helix.fillCircle(wave, y * 14, 4);
+        helix.fillStyle(0x4ade80, 0.15);
+        helix.fillCircle(-wave, y * 14, 4);
+        if (y < 5) {
+          helix.lineStyle(1, 0x22c55e, 0.15);
+          helix.lineBetween(wave, y * 14, -wave, (y + 1) * 14);
+        }
+      }
+      helix.x = hx; helix.y = 460;
+    });
+
+    // Ceiling scan beams (green horizontal lines)
+    const beams = this.add.graphics();
+    beams.lineStyle(1, 0x22c55e, 0.08);
+    for (let y = 0; y < 5; y++) {
+      beams.lineBetween(0, 15 + y * 8, W, 15 + y * 8);
+    }
+
+    // Bio-scanner arch above Platform B (featured obstacle)
+    const arch = this.add.graphics();
+    arch.lineStyle(2, 0x22c55e, 0.45);
+    arch.strokeRect(1400, 330, 100, 52);
+    arch.lineStyle(1, 0x22c55e, 0.2);
+    arch.lineBetween(1400, 356, 1500, 356); // mid crossbar
+    arch.fillStyle(0x22c55e, 0.05);
+    arch.fillRect(1400, 330, 100, 52);
   }
 
   // ─────────────────────────────────────────────────────────────────────────

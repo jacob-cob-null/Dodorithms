@@ -217,4 +217,106 @@ export const LEVELS = [
     ],
     exit: { x: 2700, y: 524 },
   },
+
+  // ── LEVEL 3 ──────────────────────────────────────────────────────────────
+  {
+    id: 'level3',
+    name: 'Level 3: The Bio-Research Wing',
+    subtitle: 'Guide: Jacob',
+    worldWidth: 2800,
+    bgColor: '#061a0a',
+    playerStart: { x: 120, y: 450 },
+
+    // Ground surface y=552.
+    // Plat A: x=700,  y=430 → surface=422 → obstacle y≈408
+    // Plat B: x=1450, y=390 → surface=382 → obstacle y≈368  (featured)
+    // Plat C: x=2100, y=430 → surface=422 → obstacle y≈408
+    platforms: [
+      { x: 1400, y: 568, scaleX: 43.75, scaleY: 2 },
+      { x: 700,  y: 430, scaleX: 4,     scaleY: 1 },
+      { x: 1450, y: 390, scaleX: 4,     scaleY: 1 },
+      { x: 2100, y: 430, scaleX: 4,     scaleY: 1 },
+    ],
+
+    parallax: [
+      { type: 'stars',    scrollFactor: 0.05 },
+      { type: 'cityFar',  scrollFactor: 0.20 },
+      { type: 'cityNear', scrollFactor: 0.45 },
+    ],
+
+    obstacles: [
+      {
+        // Ground — Jacob intro near start
+        id: 'l3-intro',
+        x: 350, y: 524,
+        objectType: 'npc',
+        texture: 'npc_jacob',
+        speaker: 'Jacob',
+        lines: [
+          "Dodo! Glad you made it through the data center. Welcome to my research wing!",
+          "We sort and scan biological data here. You'll need clearance to pass through.",
+          "Help me organise the records and match your DNA, and we'll get you cleared!",
+        ],
+        action: null,
+      },
+      {
+        // ON Platform A — Selection Sort
+        id: 'l3-selection',
+        x: 700, y: 408,
+        objectType: 'interactable',
+        texture: 'npc_jacob',
+        speaker: 'Jacob',
+        lines: [
+          "These patient severity scores are all over the place. We need them sorted!",
+          "Each round: scan the unsorted half, find the minimum, and swap it to the front.",
+          "That's Selection Sort — simple, reliable, always O(n²).",
+        ],
+        action: { type: 'minigame', scene: 'SelectionSort', algorithm: ALGORITHMS.SELECTION_SORT },
+      },
+      {
+        // Ground — Bubble Sort
+        id: 'l3-bubble',
+        x: 1100, y: 524,
+        objectType: 'interactable',
+        texture: 'npc_jacob',
+        speaker: 'Jacob',
+        lines: [
+          "Now these specimen containers need sorting before I can run them through the centrifuge.",
+          "Compare each neighbouring pair — if left is bigger, swap them. Bigger values bubble up to the end.",
+          "Bubble Sort — lots of swaps, but it stops early if the list is already tidy!",
+        ],
+        action: { type: 'minigame', scene: 'BubbleSort', algorithm: ALGORITHMS.BUBBLE_SORT },
+      },
+      {
+        // ON Platform B (higher) — BiologicalClearance featured minigame
+        id: 'l3-bio-clearance',
+        x: 1450, y: 368,
+        objectType: 'interactable',
+        texture: 'npc_jacob',
+        speaker: 'Jacob',
+        lines: [
+          "Last step — Dodo, the scanner needs to verify your DNA against our records.",
+          "We slide your short sequence across the long sample, comparing character by character.",
+          "When every character aligns, that's a match. Brute-Force String Matching!",
+        ],
+        action: { type: 'minigame', scene: 'BiologicalClearance', algorithm: ALGORITHMS.BRUTE_FORCE_STRING },
+      },
+      {
+        // ON Platform C — Prof. Andrew closing
+        id: 'l3-prof-andrew',
+        x: 2100, y: 408,
+        objectType: 'npc',
+        texture: 'npc_professor',
+        speaker: 'Prof. Andrew',
+        lines: [
+          "Nicely done, Dodo! Selection and Bubble sort are your first O(n²) sorting algorithms.",
+          "Both compare every pair you can make — the work grows with the square of the input.",
+          "And string matching by brute force? Slide and compare. Slow, but guaranteed correct.",
+          "There are faster ways to sort and to search text — we'll get to them soon!",
+        ],
+        action: null,
+      },
+    ],
+    exit: { x: 2700, y: 524 },
+  },
 ];
