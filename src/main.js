@@ -1,15 +1,18 @@
 import Phaser from "phaser";
 import "./style.css";
-import BootScene from "./scenes/BootScene.js";
-import GameScene from "./scenes/GameScene.js";
-import UIScene from "./scenes/UIScene.js";
+import BootScene        from "./scenes/BootScene.js";
+import MainMenuScene    from "./scenes/MainMenuScene.js";
+import GameScene        from "./scenes/GameScene.js";
+import UIScene          from "./scenes/UIScene.js";
+import ShatteredPad     from "./minigames/ShatteredPad.js";
+import GuestList        from "./minigames/GuestList.js";
 
 const config = {
   type: Phaser.AUTO,
   parent: "game",
   width: 800,
   height: 600,
-  backgroundColor: "#1f2933",
+  backgroundColor: "#0d1117",
   physics: {
     default: "arcade",
     arcade: {
@@ -17,7 +20,7 @@ const config = {
       debug: false,
     },
   },
-  scene: [BootScene, GameScene, UIScene],
+  scene: [BootScene, MainMenuScene, GameScene, UIScene, ShatteredPad, GuestList],
 };
 
 new Phaser.Game(config);
