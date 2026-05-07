@@ -69,7 +69,7 @@ export default class ShatteredPad extends Phaser.Scene {
     });
 
     // Feedback text
-    this.feedbackText = this.add.text(W / 2, 535, '', {
+    this.feedbackText = this.add.text(W / 2, 520, '', {
       fontFamily: 'sans-serif', fontSize: '15px', color: '#fbbf24',
       wordWrap: { width: 680 }, align: 'center',
     }).setOrigin(0.5);
@@ -101,14 +101,15 @@ export default class ShatteredPad extends Phaser.Scene {
       this.drawTileGrid(size);
       this.feedbackText.setText(`✓  GCD(${PAD_W_M}, ${PAD_H_M}) = ${size}  —  fits as a ${PAD_W_M / size} × ${PAD_H_M / size} grid perfectly!`);
       this.feedbackText.setStyle({ color: '#4ade80' });
-      btn.bg.setStrokeStyle(2, 0x4ade80).setFillStyle(0x14532d);
+      btn.setStrokeStyle(2, 0x4ade80).setFillStyle(0x14532d);
 
       this.time.delayedCall(600, () => {
-        const cont = this.add.text(400, 575, 'Continue  →', {
+        this.feedbackText.setAlpha(0);
+        this.add.text(400, 560, 'Continue  →', {
           fontFamily: 'sans-serif', fontSize: '17px', color: '#0f172a',
           backgroundColor: '#4ade80', padding: { x: 28, y: 9 },
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-        cont.on('pointerdown', () => this.finish(true));
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+          .on('pointerdown', () => this.finish(true));
       });
 
     } else if (fits) {
@@ -149,6 +150,7 @@ export default class ShatteredPad extends Phaser.Scene {
 
   finish(success) {
     EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.stop();
+    this.scene.resume('GameScene');
+    this.scene.stop('ShatteredPad');
   }
 }

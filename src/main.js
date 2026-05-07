@@ -6,6 +6,8 @@ import GameScene        from "./scenes/GameScene.js";
 import UIScene          from "./scenes/UIScene.js";
 import ShatteredPad     from "./minigames/ShatteredPad.js";
 import GuestList        from "./minigames/GuestList.js";
+import ConsecutiveInt   from "./minigames/ConsecutiveInt.js";
+import MiddleSchool     from "./minigames/MiddleSchool.js";
 
 const config = {
   type: Phaser.AUTO,
@@ -20,7 +22,7 @@ const config = {
       debug: false,
     },
   },
-  scene: [BootScene, MainMenuScene, GameScene, UIScene, ShatteredPad, GuestList],
+  scene: [BootScene, MainMenuScene, GameScene, UIScene, ShatteredPad, GuestList, ConsecutiveInt, MiddleSchool],
 };
 
 new Phaser.Game(config);

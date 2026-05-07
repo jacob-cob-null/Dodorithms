@@ -58,7 +58,7 @@ export const LEVELS = [
         // Ground — after jumping back down
         id: 'l1-souvenirs',
         x: 1050, y: 528,
-        objectType: 'npc',
+        objectType: 'interactable',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
         lines: [
@@ -67,13 +67,13 @@ export const LEVELS = [
           "Start from 48 and step down one by one — does 48 divide both? 47? Keep going until 12 does!",
           "That's the Consecutive Integer Check. Simple and reliable. Algorithm saved!",
         ],
-        action: { type: 'unlock', algorithm: ALGORITHMS.CONSECUTIVE_INTEGER },
+        action: { type: 'minigame', scene: 'ConsecutiveInt', algorithm: ALGORITHMS.CONSECUTIVE_INTEGER },
       },
       {
         // ON Platform B (surface=470) — jump up again
         id: 'l1-smartphone',
         x: 1300, y: 446,
-        objectType: 'npc',
+        objectType: 'interactable',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
         lines: [
@@ -81,7 +81,7 @@ export const LEVELS = [
           "We break this security code into its prime numbers — start from 2 and work upward.",
           "Middle School Procedure. The foundation of RSA encryption. Algorithm saved!",
         ],
-        action: { type: 'unlock', algorithm: ALGORITHMS.MIDDLE_SCHOOL },
+        action: { type: 'minigame', scene: 'MiddleSchool', algorithm: ALGORITHMS.MIDDLE_SCHOOL },
       },
       {
         // ON Platform C (surface=475) — final climb before exit
