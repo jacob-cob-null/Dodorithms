@@ -6,8 +6,11 @@ import GameScene        from "./scenes/GameScene.js";
 import UIScene          from "./scenes/UIScene.js";
 import ShatteredPad     from "./minigames/ShatteredPad.js";
 import GuestList        from "./minigames/GuestList.js";
-import ConsecutiveInt   from "./minigames/ConsecutiveInt.js";
-import MiddleSchool     from "./minigames/MiddleSchool.js";
+import ConsecutiveInt      from "./minigames/ConsecutiveInt.js";
+import MiddleSchool        from "./minigames/MiddleSchool.js";
+import SequentialSearch    from "./minigames/SequentialSearch.js";
+import MaxElement          from "./minigames/MaxElement.js";
+import ExhaustiveSearch    from "./minigames/ExhaustiveSearch.js";
 
 const config = {
   type: Phaser.AUTO,
@@ -22,7 +25,7 @@ const config = {
       debug: false,
     },
   },
-  scene: [BootScene, MainMenuScene, GameScene, UIScene, ShatteredPad, GuestList, ConsecutiveInt, MiddleSchool],
+  scene: [BootScene, MainMenuScene, GameScene, UIScene, ShatteredPad, GuestList, ConsecutiveInt, MiddleSchool, SequentialSearch, MaxElement, ExhaustiveSearch],
 };
 
 new Phaser.Game(config);

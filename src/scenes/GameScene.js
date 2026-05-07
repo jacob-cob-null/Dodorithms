@@ -194,6 +194,7 @@ export default class GameScene extends Phaser.Scene {
     });
 
     if (id === 'level1') this._drawLevel1Props(worldWidth);
+    if (id === 'level2') this._drawLevel2Props(worldWidth);
   }
 
   _drawStars(g, W) {
@@ -337,6 +338,57 @@ export default class GameScene extends Phaser.Scene {
     const strip = this.add.graphics();
     strip.lineStyle(2, 0x38bdf8, 0.12);
     strip.lineBetween(0, 553, W, 553);
+  }
+
+  _drawLevel2Props(W) {
+    // Server racks along the floor
+    [200, 500, 800, 1200, 1600, 2000, 2400].forEach(rx => {
+      const rack = this.add.graphics();
+      rack.fillStyle(0x0f1e30, 1); rack.fillRect(-14, -64, 28, 64);
+      rack.lineStyle(1, 0x1e3a5f, 1); rack.strokeRect(-14, -64, 28, 64);
+      // Drive bays
+      for (let row = 0; row < 5; row++) {
+        const lit = Math.random() > 0.4;
+        rack.fillStyle(lit ? 0x06b6d4 : 0x1e3a5f, lit ? 0.8 : 0.3);
+        rack.fillRect(-10, -58 + row * 11, 20, 7);
+      }
+      // Status light
+      rack.fillStyle(Math.random() > 0.2 ? 0x4ade80 : 0xef4444, 1);
+      rack.fillRect(6, -62, 4, 4);
+      rack.x = rx; rack.y = 552;
+    });
+
+    // Overhead data cables (horizontal runs)
+    const cable = this.add.graphics();
+    cable.lineStyle(2, 0x0e7490, 0.25);
+    for (let y = 480; y <= 510; y += 10) {
+      cable.lineBetween(0, y, W, y);
+    }
+
+    // Holographic terminal screens above platforms
+    [[700, 422], [1450, 382], [2150, 422]].forEach(([hx, hy]) => {
+      const screen = this.add.graphics();
+      screen.fillStyle(0x06b6d4, 0.08); screen.fillRect(-36, -44, 72, 40);
+      screen.lineStyle(1, 0x06b6d4, 0.4); screen.strokeRect(-36, -44, 72, 40);
+      // Scan lines
+      for (let l = 0; l < 4; l++) {
+        screen.lineStyle(1, 0x06b6d4, 0.15);
+        screen.lineBetween(-32, -38 + l * 8, 32, -38 + l * 8);
+      }
+      screen.x = hx; screen.y = hy;
+    });
+
+    // Amber warning strip on floor
+    const strip = this.add.graphics();
+    strip.lineStyle(2, 0xf59e0b, 0.1);
+    strip.lineBetween(0, 553, W, 553);
+
+    // Ceiling conduit
+    const conduit = this.add.graphics();
+    conduit.lineStyle(3, 0x1e3a5f, 0.5);
+    conduit.lineBetween(0, 2, W, 2);
+    conduit.fillStyle(0x06b6d4, 0.06);
+    conduit.fillRect(0, 0, W, 5);
   }
 
   // ─────────────────────────────────────────────────────────────────────────

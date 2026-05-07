@@ -111,16 +111,29 @@ export const LEVELS = [
     worldWidth: 2800,
     bgColor: '#0a1628',
     playerStart: { x: 120, y: 450 },
+
+    // Ground surface y=552. Platforms surface = platform_y - 8.
+    // Plat A: x=700,  y=430 → surface=422 → obstacle y≈408
+    // Plat B: x=1450, y=390 → surface=382 → obstacle y≈368
+    // Plat C: x=2150, y=430 → surface=422 → obstacle y≈408
     platforms: [
-      { x: 1400, y: 568, scaleX: 43.75, scaleY: 2 },
-      { x: 700,  y: 430, scaleX: 4, scaleY: 1 },
-      { x: 1450, y: 390, scaleX: 4, scaleY: 1 },
-      { x: 2150, y: 430, scaleX: 4, scaleY: 1 },
+      { x: 1400, y: 568, scaleX: 43.75, scaleY: 2 }, // ground
+      { x: 700,  y: 430, scaleX: 4,     scaleY: 1 }, // A
+      { x: 1450, y: 390, scaleX: 4,     scaleY: 1 }, // B (higher)
+      { x: 2150, y: 430, scaleX: 4,     scaleY: 1 }, // C
     ],
+
+    parallax: [
+      { type: 'stars',    scrollFactor: 0.05 },
+      { type: 'cityFar',  scrollFactor: 0.20 },
+      { type: 'cityNear', scrollFactor: 0.45 },
+    ],
+
     obstacles: [
       {
+        // Ground — intro near start
         id: 'l2-intro',
-        x: 350, y: 520,
+        x: 350, y: 524,
         objectType: 'npc',
         texture: 'npc_trizy',
         speaker: 'Trizy',
@@ -131,34 +144,37 @@ export const LEVELS = [
         action: null,
       },
       {
+        // ON Platform A (surface=422) — first jump
         id: 'l2-fraud',
-        x: 750, y: 520,
-        objectType: 'npc',
+        x: 700, y: 408,
+        objectType: 'interactable',
         texture: 'npc_trizy',
         speaker: 'Trizy',
         lines: [
           "Someone skipped the Earth visa fee! These logs are completely unsorted.",
           "We have to check every single entry from top to bottom until we spot the fake.",
-          "No shortcuts when data is unsorted — Sequential Search. O(n) worst case. Algorithm saved!",
+          "No shortcuts when data is unsorted — Sequential Search!",
         ],
-        action: { type: 'unlock', algorithm: ALGORITHMS.SEQUENTIAL_SEARCH },
+        action: { type: 'minigame', scene: 'SequentialSearch', algorithm: ALGORITHMS.SEQUENTIAL_SEARCH },
       },
       {
+        // Ground — after jumping back down
         id: 'l2-skies',
-        x: 1200, y: 520,
-        objectType: 'npc',
+        x: 1100, y: 524,
+        objectType: 'interactable',
         texture: 'npc_trizy',
         speaker: 'Trizy',
         lines: [
           "Dodo: Is it safe to fly to the next sector? The wind readings look erratic!",
           "Assume the first reading is the highest. Scan each one — if you see bigger, that's your new peak.",
-          "MaxElement. One clean pass to find the peak value. Algorithm saved!",
+          "MaxElement — one clean pass to find the peak value!",
         ],
-        action: { type: 'unlock', algorithm: ALGORITHMS.MAX_ELEMENT },
+        action: { type: 'minigame', scene: 'MaxElement', algorithm: ALGORITHMS.MAX_ELEMENT },
       },
       {
+        // ON Platform B (surface=382) — higher climb
         id: 'l2-guest-list',
-        x: 1650, y: 520,
+        x: 1450, y: 368,
         objectType: 'interactable',
         texture: 'interactable',
         speaker: 'Trizy',
@@ -170,21 +186,23 @@ export const LEVELS = [
         action: { type: 'minigame', scene: 'GuestList', algorithm: ALGORITHMS.UNIQUE_ELEMENTS },
       },
       {
+        // ON Platform C (surface=422) — final climb
         id: 'l2-tour',
-        x: 2050, y: 520,
-        objectType: 'npc',
+        x: 2150, y: 408,
+        objectType: 'interactable',
         texture: 'npc_trizy',
         speaker: 'Trizy',
         lines: [
           "Dodo: I want to visit Paris, Neo-Manila, New York, and Tokyo. Fastest route?",
           "To find the ABSOLUTE shortest trip we map out every possible order of those 4 cities.",
-          "4 cities = 4! = 24 routes. Exhaustive Search — guaranteed optimal, but it explodes with scale. Algorithm saved!",
+          "4 cities = 4! = 24 routes. Exhaustive Search — guaranteed optimal, but explodes with scale!",
         ],
-        action: { type: 'unlock', algorithm: ALGORITHMS.EXHAUSTIVE_SEARCH },
+        action: { type: 'minigame', scene: 'ExhaustiveSearch', algorithm: ALGORITHMS.EXHAUSTIVE_SEARCH },
       },
       {
+        // Ground — before exit
         id: 'l2-prof-andrew',
-        x: 2450, y: 520,
+        x: 2500, y: 524,
         objectType: 'npc',
         texture: 'npc_professor',
         speaker: 'Prof. Andrew',
@@ -197,6 +215,6 @@ export const LEVELS = [
         action: null,
       },
     ],
-    exit: { x: 2700, y: 520 },
+    exit: { x: 2700, y: 524 },
   },
 ];
