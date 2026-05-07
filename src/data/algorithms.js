@@ -51,4 +51,21 @@ export const ALGORITHMS = {
     name: 'Brute-Force String Matching',
     description: 'Slide the pattern across the text, comparing character by character.',
   },
+
+  // ── Level 4 ─────────────────────────────────────────────────────────────
+  INSERTION_SORT: {
+    id: 'insertion-sort',
+    name: 'Insertion Sort',
+    description: 'Take each unsorted element and insert it into the correct sorted position.',
+  },
+  DFS: {
+    id: 'dfs',
+    name: 'Depth-First Search',
+    description: 'Explore as deep as possible down each branch before backtracking.',
+  },
+  BFS: {
+    id: 'bfs',
+    name: 'Breadth-First Search',
+    description: 'Explore all neighbours at the current depth before going deeper. Guarantees shortest path.',
+  },
 };

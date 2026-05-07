@@ -319,4 +319,97 @@ export const LEVELS = [
     ],
     exit: { x: 2700, y: 524 },
   },
+
+  // ── LEVEL 4 ──────────────────────────────────────────────────────────────
+  {
+    id: 'level4',
+    name: 'Level 4: The HyperTrain Terminal',
+    subtitle: 'Guide: Kyla',
+    worldWidth: 2800,
+    bgColor: '#0d0a1f',
+    playerStart: { x: 120, y: 450 },
+
+    platforms: [
+      { x: 1400, y: 568, scaleX: 43.75, scaleY: 2 },
+      { x: 700,  y: 430, scaleX: 4,     scaleY: 1 },
+      { x: 1450, y: 390, scaleX: 4,     scaleY: 1 },
+      { x: 2100, y: 430, scaleX: 4,     scaleY: 1 },
+    ],
+
+    parallax: [
+      { type: 'stars',    scrollFactor: 0.05 },
+      { type: 'cityFar',  scrollFactor: 0.20 },
+      { type: 'cityNear', scrollFactor: 0.45 },
+    ],
+
+    obstacles: [
+      {
+        id: 'l4-intro',
+        x: 350, y: 524,
+        objectType: 'npc',
+        texture: 'npc_kyla',
+        speaker: 'Kyla',
+        lines: [
+          "Dodo! Welcome to the HyperTrain terminal — I've been waiting for you.",
+          "We have three trains to catch and I need your algorithmic brain to sort the tickets and navigate the network.",
+          "Let's get moving before we miss the first departure!",
+        ],
+        action: null,
+      },
+      {
+        id: 'l4-insertion',
+        x: 700, y: 408,
+        objectType: 'interactable',
+        texture: 'npc_kyla',
+        speaker: 'Kyla',
+        lines: [
+          "These departure times are out of order — we need to sort the tickets fast!",
+          "Take each new ticket and slide it left until it's in the right spot among the sorted ones.",
+          "Insertion Sort — great for small or nearly-sorted lists!",
+        ],
+        action: { type: 'minigame', scene: 'InsertionSort', algorithm: ALGORITHMS.INSERTION_SORT },
+      },
+      {
+        id: 'l4-dfs',
+        x: 1100, y: 524,
+        objectType: 'interactable',
+        texture: 'npc_kyla',
+        speaker: 'Kyla',
+        lines: [
+          "The maintenance tunnels have multiple paths — but most are dead ends!",
+          "Depth-First Search: go as deep as you can, backtrack when you hit a dead end.",
+          "DFS uses a stack — last in, first out. Not the shortest path, but it finds a path!",
+        ],
+        action: { type: 'minigame', scene: 'DFS', algorithm: ALGORITHMS.DFS },
+      },
+      {
+        id: 'l4-hypertrain',
+        x: 1450, y: 368,
+        objectType: 'interactable',
+        texture: 'npc_kyla',
+        speaker: 'Kyla',
+        lines: [
+          "The main network — six stations, one destination. We need the SHORTEST route!",
+          "BFS spreads out like a wave — all stations one hop away before two hops, two before three.",
+          "BFS guarantees the shortest path. That's the HyperTrain way!",
+        ],
+        action: { type: 'minigame', scene: 'HyperTrain', algorithm: ALGORITHMS.BFS },
+      },
+      {
+        id: 'l4-prof-andrew',
+        x: 2100, y: 408,
+        objectType: 'npc',
+        texture: 'npc_professor',
+        speaker: 'Prof. Andrew',
+        lines: [
+          "Excellent work navigating the terminal, Dodo!",
+          "Insertion Sort is elegant — each card slots into place, just like a hand of cards.",
+          "DFS and BFS are the two fundamental graph traversal strategies.",
+          "DFS dives deep with a stack; BFS fans out with a queue. Different tools for different problems!",
+        ],
+        action: null,
+      },
+    ],
+    exit: { x: 2700, y: 524 },
+  },
 ];

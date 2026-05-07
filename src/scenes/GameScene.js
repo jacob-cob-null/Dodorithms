@@ -196,6 +196,7 @@ export default class GameScene extends Phaser.Scene {
     if (id === 'level1') this._drawLevel1Props(worldWidth);
     if (id === 'level2') this._drawLevel2Props(worldWidth);
     if (id === 'level3') this._drawLevel3Props(worldWidth);
+    if (id === 'level4') this._drawLevel4Props(worldWidth);
   }
 
   _drawStars(g, W) {
@@ -390,6 +391,63 @@ export default class GameScene extends Phaser.Scene {
     conduit.lineBetween(0, 2, W, 2);
     conduit.fillStyle(0x06b6d4, 0.06);
     conduit.fillRect(0, 0, W, 5);
+  }
+
+  _drawLevel4Props(W) {
+    // Train tracks along the floor (two parallel rails)
+    const track = this.add.graphics();
+    track.lineStyle(3, 0x334155, 0.7);
+    track.lineBetween(0, 546, W, 546);
+    track.lineBetween(0, 554, W, 554);
+    // Sleepers (cross-ties)
+    for (let x = 0; x < W; x += 32) {
+      track.lineStyle(4, 0x1e293b, 0.9);
+      track.lineBetween(x, 543, x, 557);
+    }
+
+    // Platform edge strips at each station marker
+    [350, 800, 1300, 1750, 2250].forEach(px => {
+      const plat = this.add.graphics();
+      plat.fillStyle(0xa855f7, 0.08);
+      plat.fillRect(-48, -8, 96, 8);
+      plat.lineStyle(1, 0xa855f7, 0.3);
+      plat.strokeRect(-48, -8, 96, 8);
+      plat.x = px; plat.y = 552;
+    });
+
+    // Route map boards above platforms
+    [[700, 422], [1450, 382], [2100, 422]].forEach(([mx, my]) => {
+      const board = this.add.graphics();
+      board.fillStyle(0x1a0d3d, 1);
+      board.fillRect(-42, -34, 84, 30);
+      board.lineStyle(1, 0xa855f7, 0.4);
+      board.strokeRect(-42, -34, 84, 30);
+      // Dot-matrix style route lines
+      for (let l = 0; l < 3; l++) {
+        board.fillStyle(0xa855f7, 0.25 + l * 0.15);
+        board.fillRect(-36, -28 + l * 8, 40 + l * 8, 4);
+      }
+      board.x = mx; board.y = my;
+    });
+
+    // Overhead power lines
+    const wire = this.add.graphics();
+    wire.lineStyle(1, 0xa855f7, 0.12);
+    wire.lineBetween(0, 8, W, 8);
+    wire.lineStyle(1, 0x7c3aed, 0.08);
+    wire.lineBetween(0, 16, W, 16);
+
+    // Departure sign pillars
+    [250, 750, 1200, 1700, 2300].forEach(px => {
+      const pillar = this.add.graphics();
+      pillar.fillStyle(0x1a0d3d, 1);
+      pillar.fillRect(-3, -80, 6, 80);
+      pillar.fillStyle(0x2d1d6b, 1);
+      pillar.fillRect(-20, -88, 40, 22);
+      pillar.lineStyle(1, 0xa855f7, 0.35);
+      pillar.strokeRect(-20, -88, 40, 22);
+      pillar.x = px; pillar.y = 552;
+    });
   }
 
   _drawLevel3Props(W) {
