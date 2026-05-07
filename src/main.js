@@ -21,6 +21,16 @@ import BinarySearch           from "./minigames/BinarySearch.js";
 import InterpolationSearch    from "./minigames/InterpolationSearch.js";
 import QuickSort              from "./minigames/QuickSort.js";
 import IntergalacticCensus    from "./minigames/IntergalacticCensus.js";
+import HeapPriority           from "./minigames/HeapPriority.js";
+import PreSort                from "./minigames/PreSort.js";
+import ChangeMaking           from "./minigames/ChangeMaking.js";
+import CargoGrid              from "./minigames/CargoGrid.js";
+import SpanningTree           from "./minigames/SpanningTree.js";
+import HuffmanCode            from "./minigames/HuffmanCode.js";
+import ServerRouting          from "./minigames/ServerRouting.js";
+import QueenGrid              from "./minigames/QueenGrid.js";
+import RouteOptimizer         from "./minigames/RouteOptimizer.js";
+import ComplexityGate         from "./minigames/ComplexityGate.js";
 
 const config = {
   type: Phaser.AUTO,
@@ -35,7 +45,7 @@ const config = {
       debug: false,
     },
   },
-  scene: [BootScene, MainMenuScene, GameScene, UIScene, ShatteredPad, GuestList, ConsecutiveInt, MiddleSchool, SequentialSearch, MaxElement, ExhaustiveSearch, SelectionSort, BubbleSort, BiologicalClearance, InsertionSort, DFS, HyperTrain, BinarySearch, InterpolationSearch, QuickSort, IntergalacticCensus],
+  scene: [BootScene, MainMenuScene, GameScene, UIScene, ShatteredPad, GuestList, ConsecutiveInt, MiddleSchool, SequentialSearch, MaxElement, ExhaustiveSearch, SelectionSort, BubbleSort, BiologicalClearance, InsertionSort, DFS, HyperTrain, BinarySearch, InterpolationSearch, QuickSort, IntergalacticCensus, HeapPriority, PreSort, ChangeMaking, CargoGrid, SpanningTree, HuffmanCode, ServerRouting, QueenGrid, RouteOptimizer, ComplexityGate],
 };
 
 new Phaser.Game(config);

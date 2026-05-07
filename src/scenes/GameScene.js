@@ -198,6 +198,9 @@ export default class GameScene extends Phaser.Scene {
     if (id === 'level3') this._drawLevel3Props(worldWidth);
     if (id === 'level4') this._drawLevel4Props(worldWidth);
     if (id === 'level5') this._drawLevel5Props(worldWidth);
+    if (id === 'level6') this._drawLevel6Props(worldWidth);
+    if (id === 'level7') this._drawLevel7Props(worldWidth);
+    if (id === 'level8') this._drawLevel8Props(worldWidth);
   }
 
   _drawStars(g, W) {
@@ -572,19 +575,278 @@ export default class GameScene extends Phaser.Scene {
     arch.fillRect(1400, 330, 100, 52);
   }
 
+  _drawLevel6Props(W) {
+    // Deep-space hull floor strip
+    const hull = this.add.graphics();
+    for (let x = 0; x < W; x += 60) {
+      hull.fillStyle(0x2d1d6b, 0.12);
+      hull.fillRect(x, 548, 40, 8);
+    }
+
+    // Cargo containers stacked along the floor
+    [180, 420, 820, 1200, 1700, 2200, 2480].forEach((cx, i) => {
+      const cg = this.add.graphics();
+      const colors = [0x1a0d3d, 0x0d1f35, 0x1a1a2e];
+      const col = colors[i % colors.length];
+      cg.fillStyle(col, 1);
+      cg.fillRect(-28, -46, 56, 46);
+      cg.lineStyle(1, 0x4c1d95, 0.5);
+      cg.strokeRect(-28, -46, 56, 46);
+      // Rivets
+      [[-22, -38], [18, -38], [-22, -12], [18, -12]].forEach(([rx, ry]) => {
+        cg.fillStyle(0x7c3aed, 0.4);
+        cg.fillCircle(rx, ry, 2);
+      });
+      // Colour stripe / label band
+      cg.fillStyle(0x7c3aed, 0.25);
+      cg.fillRect(-28, -22, 56, 8);
+      cg.x = cx; cg.y = 552;
+    });
+
+    // Porthole windows along the top (showing stars outside)
+    [120, 400, 750, 1100, 1500, 1900, 2350].forEach(px => {
+      const port = this.add.graphics();
+      port.fillStyle(0x050b18, 1);
+      port.fillCircle(0, 0, 18);
+      port.lineStyle(3, 0x4c1d95, 0.8);
+      port.strokeCircle(0, 0, 18);
+      // Crosshair
+      port.lineStyle(1, 0x4c1d95, 0.3);
+      port.lineBetween(-18, 0, 18, 0);
+      port.lineBetween(0, -18, 0, 18);
+      // Star inside
+      port.fillStyle(0xffffff, 0.7);
+      port.fillRect(-2, -2, 2, 2);
+      port.fillStyle(0x93c5fd, 0.5);
+      port.fillRect(6, -8, 1, 1);
+      port.fillRect(-8, 5, 1, 1);
+      port.x = px; port.y = 40;
+    });
+
+    // Gravity ring generators (horizontal rings on the ground)
+    [500, 1050, 1600, 2300].forEach(gx => {
+      const ring = this.add.graphics();
+      ring.lineStyle(2, 0x7c3aed, 0.35);
+      ring.strokeEllipse(0, 0, 70, 14);
+      ring.lineStyle(1, 0xa855f7, 0.15);
+      ring.strokeEllipse(0, 0, 90, 18);
+      ring.x = gx; ring.y = 552;
+    });
+
+    // Medical bay panel above Platform A (heap priority)
+    const medPanel = this.add.graphics();
+    medPanel.fillStyle(0x1a0d3d, 1);
+    medPanel.fillRect(640, 340, 120, 60);
+    medPanel.lineStyle(1, 0xef4444, 0.4);
+    medPanel.strokeRect(640, 340, 120, 60);
+    medPanel.lineStyle(1, 0xef4444, 0.2);
+    medPanel.lineBetween(640, 370, 760, 370);
+    // Red cross icon
+    medPanel.fillStyle(0xef4444, 0.5);
+    medPanel.fillRect(692, 346, 16, 6);
+    medPanel.fillRect(697, 341, 6, 16);
+
+    // Holographic cargo manifest display above Platform C (knapsack)
+    const manifest = this.add.graphics();
+    manifest.fillStyle(0x0d1f35, 1);
+    manifest.fillRect(2040, 340, 120, 60);
+    manifest.lineStyle(1, 0x38bdf8, 0.4);
+    manifest.strokeRect(2040, 340, 120, 60);
+    // Data rows
+    for (let r = 0; r < 3; r++) {
+      manifest.fillStyle(0x38bdf8, 0.15 + r * 0.07);
+      manifest.fillRect(2048, 350 + r * 14, 60 + r * 8, 8);
+    }
+    manifest.lineStyle(1, 0x38bdf8, 0.2);
+    manifest.lineBetween(2040, 374, 2160, 374);
+
+    // DP table arch above Platform B (change-making)
+    const dpArch = this.add.graphics();
+    dpArch.lineStyle(2, 0xa855f7, 0.4);
+    dpArch.strokeRect(1390, 322, 120, 50);
+    dpArch.lineStyle(1, 0xa855f7, 0.18);
+    dpArch.lineBetween(1390, 347, 1510, 347);
+    dpArch.fillStyle(0xa855f7, 0.05);
+    dpArch.fillRect(1390, 322, 120, 50);
+
+    // Ceiling conduit cables
+    const conduit = this.add.graphics();
+    conduit.lineStyle(1, 0x4c1d95, 0.2);
+    conduit.lineBetween(0, 8, W, 8);
+    conduit.lineStyle(1, 0x7c3aed, 0.1);
+    conduit.lineBetween(0, 18, W, 18);
+  }
+
+  _drawLevel7Props(W) {
+    // Launchpad floor markings (dashed yellow lines)
+    const markings = this.add.graphics();
+    for (let x = 0; x < W; x += 50) {
+      markings.fillStyle(0xf59e0b, 0.12);
+      markings.fillRect(x, 548, 28, 8);
+    }
+
+    // Communication towers
+    [280, 680, 1100, 1680, 2280].forEach(tx => {
+      const tower = this.add.graphics();
+      // Stem
+      tower.fillStyle(0x0f2038, 1);
+      tower.fillRect(-4, -120, 8, 120);
+      // Crossbeam
+      tower.fillStyle(0x1e3a5f, 1);
+      tower.fillRect(-22, -80, 44, 6);
+      // Dish
+      tower.fillStyle(0x1e3a5f, 1);
+      tower.fillEllipse(0, -128, 28, 12);
+      tower.lineStyle(1, 0x38bdf8, 0.4);
+      tower.strokeEllipse(0, -128, 28, 12);
+      // Antenna tip
+      tower.fillStyle(0xef4444, 0.8);
+      tower.fillCircle(0, -134, 3);
+      tower.x = tx; tower.y = 552;
+    });
+
+    // Fiber optic cables along floor
+    const cables = this.add.graphics();
+    cables.lineStyle(1, 0x38bdf8, 0.22);
+    cables.lineBetween(0, 548, W, 548);
+    cables.lineStyle(1, 0x60a5fa, 0.10);
+    cables.lineBetween(0, 553, W, 553);
+
+    // Server rack panels near ground
+    [480, 980, 1580, 2080].forEach(rx => {
+      const rack = this.add.graphics();
+      rack.fillStyle(0x0c1a2e, 1);
+      rack.fillRect(-22, -48, 44, 48);
+      rack.lineStyle(1, 0x1e3a5f, 0.6);
+      rack.strokeRect(-22, -48, 44, 48);
+      for (let r = 0; r < 4; r++) {
+        rack.fillStyle(0x38bdf8, 0.15 + r * 0.04);
+        rack.fillRect(-16, -42 + r * 10, 32, 6);
+      }
+      rack.x = rx; rack.y = 552;
+    });
+
+    // MST arch above Platform A (x=700)
+    const mstArch = this.add.graphics();
+    mstArch.lineStyle(2, 0x38bdf8, 0.4);
+    mstArch.strokeRect(638, 336, 124, 58);
+    mstArch.lineStyle(1, 0x38bdf8, 0.15);
+    mstArch.lineBetween(638, 365, 762, 365);
+    mstArch.fillStyle(0x38bdf8, 0.04);
+    mstArch.fillRect(638, 336, 124, 58);
+
+    // Dijkstra arch above Platform B (x=1450)
+    const djkArch = this.add.graphics();
+    djkArch.lineStyle(2, 0xf59e0b, 0.4);
+    djkArch.strokeRect(1388, 296, 124, 58);
+    djkArch.lineStyle(1, 0xf59e0b, 0.15);
+    djkArch.lineBetween(1388, 325, 1512, 325);
+    djkArch.fillStyle(0xf59e0b, 0.04);
+    djkArch.fillRect(1388, 296, 124, 58);
+
+    // Ceiling network conduit
+    const conduit = this.add.graphics();
+    conduit.lineStyle(1, 0x1e3a5f, 0.25);
+    conduit.lineBetween(0, 6, W, 6);
+    conduit.lineStyle(1, 0x38bdf8, 0.08);
+    conduit.lineBetween(0, 16, W, 16);
+  }
+
+  _drawLevel8Props(W) {
+    // Dense starfield (climactic finale)
+    const stars = this.add.graphics();
+    for (let i = 0; i < 350; i++) {
+      const sx = Phaser.Math.Between(0, W);
+      const sy = Phaser.Math.Between(0, 420);
+      const sz = Math.random() > 0.9 ? 2 : 1;
+      const blue = Math.random() > 0.5;
+      stars.fillStyle(blue ? 0x93c5fd : 0xffffff, Phaser.Math.FloatBetween(0.1, 0.9));
+      stars.fillRect(sx, sy, sz, sz);
+    }
+
+    // Holographic lock scanlines near start
+    const lockG = this.add.graphics();
+    for (let i = 0; i < 4; i++) {
+      lockG.lineStyle(1, 0xa855f7, 0.18 - i * 0.03);
+      lockG.lineBetween(0, 80 + i * 14, W, 80 + i * 14);
+    }
+
+    // Energy columns spaced across world
+    [400, 900, 1500, 2200, 2900].forEach(ex => {
+      const eg = this.add.graphics();
+      eg.lineStyle(1, 0xa855f7, 0.15);
+      eg.lineBetween(ex, 0, ex, 552);
+    });
+
+    // Chessboard hint tiles above Platform A (x=700, y=430)
+    const chess = this.add.graphics();
+    const cs = 16;
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 4; c++) {
+        const isLight = (r + c) % 2 === 0;
+        chess.fillStyle(isLight ? 0x1e293b : 0x0f172a, 0.5);
+        chess.fillRect(636 + c * cs, 346 + r * cs, cs, cs);
+        chess.lineStyle(1, 0x334155, 0.3);
+        chess.strokeRect(636 + c * cs, 346 + r * cs, cs, cs);
+      }
+    }
+
+    // P / NP / NP-Complete door hint frames above Platform B (x=1400)
+    const doorColors = [0x22c55e, 0xfbbf24, 0xef4444];
+    doorColors.forEach((col, i) => {
+      const dx = 1290 + i * 56;
+      const dg = this.add.graphics();
+      dg.lineStyle(1, col, 0.3);
+      dg.strokeRect(dx, 306, 46, 60);
+      dg.fillStyle(col, 0.05);
+      dg.fillRect(dx, 306, 46, 60);
+    });
+
+    // Launch pad glow circle near exit
+    const padG = this.add.graphics();
+    padG.lineStyle(2, 0x4ade80, 0.2);
+    padG.strokeEllipse(3200, 552, 220, 28);
+    padG.fillStyle(0x4ade80, 0.05);
+    padG.fillEllipse(3200, 552, 220, 28);
+
+    // Ship silhouette hint near exit
+    const shipG = this.add.graphics();
+    shipG.fillStyle(0x38bdf8, 0.10);
+    shipG.fillTriangle(3200, 430, 3170, 500, 3230, 500);
+    shipG.lineStyle(1, 0x38bdf8, 0.2);
+    shipG.strokeTriangle(3200, 430, 3170, 500, 3230, 500);
+
+    // Complexity archway above Platform B
+    const compArch = this.add.graphics();
+    compArch.lineStyle(2, 0xa855f7, 0.35);
+    compArch.strokeRect(1336, 296, 128, 58);
+    compArch.fillStyle(0xa855f7, 0.04);
+    compArch.fillRect(1336, 296, 128, 58);
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
 
   showEndScreen() {
     this.cameras.main.setBackgroundColor('#0d1117');
-    this.add.text(400, 220, 'Levels 1 & 2 Complete!', {
-      fontFamily: 'sans-serif', fontSize: '32px', color: '#f8fafc',
+    this.add.text(400, 190, "Dodo's Algorithmic Adventure", {
+      fontFamily: 'sans-serif', fontSize: '20px', color: '#475569',
     }).setOrigin(0.5);
-    this.add.text(400, 275, 'More levels coming soon...', {
-      fontFamily: 'sans-serif', fontSize: '18px', color: '#94a3b8',
+
+    this.add.text(400, 228, 'All Levels Complete!', {
+      fontFamily: 'sans-serif', fontSize: '34px', color: '#f8fafc',
+    }).setOrigin(0.5);
+
+    this.add.text(400, 270, '"Thanks for everything! You humans sure have some incredibly\nefficient ways to solve problems. Next stop — ZZS!"', {
+      fontFamily: 'sans-serif', fontSize: '14px', color: '#94a3b8',
+      align: 'center', fontStyle: 'italic',
+    }).setOrigin(0.5);
+
+    this.add.text(400, 320, '— Dodo', {
+      fontFamily: 'sans-serif', fontSize: '13px', color: '#475569',
     }).setOrigin(0.5);
 
     const total = archiveSystem.getAllAlgorithms().length;
-    this.add.text(400, 320, `Algorithms collected: ${total} / 24`, {
+    this.add.text(400, 358, `Algorithms collected: ${total} / 30`, {
       fontFamily: 'sans-serif', fontSize: '16px', color: '#38bdf8',
     }).setOrigin(0.5);
 

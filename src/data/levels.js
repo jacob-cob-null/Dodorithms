@@ -523,4 +523,332 @@ export const LEVELS = [
     ],
     exit: { x: 3100, y: 524 },
   },
+
+  // ── LEVEL 6 ──────────────────────────────────────────────────────────────
+  {
+    id: 'level6',
+    name: 'Level 6: The Orbital Station',
+    subtitle: 'Guides: All',
+    worldWidth: 2800,
+    bgColor: '#100518',
+    playerStart: { x: 120, y: 450 },
+
+    // Ground surface y=552.
+    // Plat A: x=700,  y=430 → surface=422 → obstacle y≈408  (HeapPriority)
+    // Plat B: x=1450, y=390 → surface=382 → obstacle y≈368  (ChangeMaking)
+    // Plat C: x=2100, y=430 → surface=422 → obstacle y≈408  (CargoGrid featured)
+    platforms: [
+      { x: 1400, y: 568, scaleX: 43.75, scaleY: 2 },
+      { x: 700,  y: 430, scaleX: 4,     scaleY: 1 },
+      { x: 1450, y: 390, scaleX: 4,     scaleY: 1 },
+      { x: 2100, y: 430, scaleX: 4,     scaleY: 1 },
+    ],
+
+    parallax: [
+      { type: 'stars', scrollFactor: 0.02 },
+      { type: 'stars', scrollFactor: 0.12 },
+    ],
+
+    obstacles: [
+      {
+        id: 'l6-intro',
+        x: 350, y: 524,
+        objectType: 'npc',
+        texture: 'npc_trizy',
+        speaker: 'Trizy',
+        lines: [
+          "Dodo! You made it to the orbital station. All of us are here!",
+          "The station AI needs an overhaul — four key systems are failing.",
+          "Medical triage, cargo loading, the change dispenser, and the cargo hold manifest. Let's fix them!",
+        ],
+        action: null,
+      },
+      {
+        // ON Platform A — HeapPriority
+        id: 'l6-heap',
+        x: 700, y: 408,
+        objectType: 'interactable',
+        texture: 'npc_laurenze',
+        speaker: 'Laurenze',
+        lines: [
+          "The medical bay AI crashed — patients are being treated in random order!",
+          "A max-heap keeps the sickest patient at the root, always extracting highest priority.",
+          "Help re-triage the patients using the Priority Queue!",
+        ],
+        action: { type: 'minigame', scene: 'HeapPriority', algorithm: ALGORITHMS.PRIORITY_QUEUE },
+      },
+      {
+        // Ground — PreSort
+        id: 'l6-presort',
+        x: 1100, y: 524,
+        objectType: 'interactable',
+        texture: 'npc_jacob',
+        speaker: 'Jacob',
+        lines: [
+          "The cargo manifest scanner is doing sequential search on unsorted data — it's painfully slow!",
+          "If we sort the manifest once, every future search becomes O(log n) binary search.",
+          "Sort it now and prove the difference!",
+        ],
+        action: { type: 'minigame', scene: 'PreSort', algorithm: ALGORITHMS.PRESORT },
+      },
+      {
+        // ON Platform B — ChangeMaking
+        id: 'l6-change',
+        x: 1450, y: 368,
+        objectType: 'interactable',
+        texture: 'npc_kyla',
+        speaker: 'Kyla',
+        lines: [
+          "The station's credit dispenser is broken — it's using a greedy algorithm and shortchanging everyone!",
+          "Greedy takes the largest coin first. But that's not always optimal.",
+          "Fill in the DP table and show it the minimum-coin solution!",
+        ],
+        action: { type: 'minigame', scene: 'ChangeMaking', algorithm: ALGORITHMS.CHANGE_MAKING },
+      },
+      {
+        // ON Platform C — CargoGrid (featured)
+        id: 'l6-cargo',
+        x: 2100, y: 408,
+        objectType: 'interactable',
+        texture: 'npc_trizy',
+        speaker: 'Trizy',
+        lines: [
+          "Final challenge — the cargo bay can only carry 4 units of weight.",
+          "We have a ZZS Crystal, a Fuel Cell, and a Med Kit. Which combination is most valuable?",
+          "Fill the 0/1 Knapsack DP table row by row. The table will reveal the answer!",
+        ],
+        action: { type: 'minigame', scene: 'CargoGrid', algorithm: ALGORITHMS.KNAPSACK },
+      },
+      {
+        // Ground — Prof. Andrew closing
+        id: 'l6-prof-andrew',
+        x: 2550, y: 524,
+        objectType: 'npc',
+        texture: 'npc_professor',
+        speaker: 'Prof. Andrew',
+        lines: [
+          "Remarkable, Dodo! You've now mastered the algorithmic toolkit.",
+          "Priority queues give O(log n) extraction. PreSorting amortises search cost across many queries.",
+          "Dynamic programming — change-making and knapsack — breaks big problems into solved sub-problems.",
+          "You're thinking like a computer scientist. The galaxy is your oyster!",
+        ],
+        action: null,
+      },
+    ],
+    exit: { x: 2700, y: 524 },
+  },
+
+  // ── LEVEL 7 ──────────────────────────────────────────────────────────────
+  {
+    id: 'level7',
+    name: 'Level 7: The Network Grid',
+    subtitle: 'Guides: Laurenze & Kyla',
+    worldWidth: 2800,
+    bgColor: '#081020',
+    playerStart: { x: 120, y: 450 },
+
+    // Ground surface y=552.
+    // Plat A: x=700,  y=430 → surface=422 → obstacle y≈408  (SpanningTree)
+    // Plat B: x=1450, y=390 → surface=382 → obstacle y≈368  (ServerRouting featured)
+    // Plat C: x=2100, y=430 → surface=422 → obstacle y≈408
+    platforms: [
+      { x: 1400, y: 568, scaleX: 43.75, scaleY: 2 },
+      { x: 700,  y: 430, scaleX: 4,     scaleY: 1 },
+      { x: 1450, y: 390, scaleX: 4,     scaleY: 1 },
+      { x: 2100, y: 430, scaleX: 4,     scaleY: 1 },
+    ],
+
+    parallax: [
+      { type: 'stars', scrollFactor: 0.02 },
+      { type: 'stars', scrollFactor: 0.12 },
+    ],
+
+    obstacles: [
+      {
+        id: 'l7-intro',
+        x: 350, y: 524,
+        objectType: 'npc',
+        texture: 'npc_laurenze',
+        speaker: 'Laurenze',
+        lines: [
+          "Dodo! The launchpad's network has completely fragmented. We need to rewire the system!",
+          "We have to connect all five floating space-docks with the minimum amount of wire possible.",
+          "Jump up to the first dock — let's get these towers talking to each other!",
+        ],
+        action: null,
+      },
+      {
+        // ON Platform A — SpanningTree (Kruskal's)
+        id: 'l7-spanning',
+        x: 700, y: 408,
+        objectType: 'interactable',
+        texture: 'npc_laurenze',
+        speaker: 'Laurenze',
+        lines: [
+          "We have a limited spool of fiber-optic wire. Connect all 5 docks — minimum wire!",
+          "Take the cheapest edge that doesn't create a loop. That's Kruskal's Algorithm!",
+          "Sort the edges by weight, add the shortest one that doesn't form a cycle. Repeat until all connected.",
+        ],
+        action: { type: 'minigame', scene: 'SpanningTree', algorithm: ALGORITHMS.KRUSKAL_PRIM },
+      },
+      {
+        // Ground — HuffmanCode
+        id: 'l7-huffman',
+        x: 1100, y: 524,
+        objectType: 'interactable',
+        texture: 'npc_kyla',
+        speaker: 'Kyla',
+        lines: [
+          "The bandwidth is too narrow! We need to compress the ship's signature file.",
+          "If we give the most common letters the shortest bit-codes, the total file size shrinks!",
+          "Build the Huffman tree — merge the two lowest-frequency nodes each time.",
+        ],
+        action: { type: 'minigame', scene: 'HuffmanCode', algorithm: ALGORITHMS.HUFFMAN },
+      },
+      {
+        // ON Platform B (featured) — ServerRouting (Dijkstra's)
+        id: 'l7-routing',
+        x: 1450, y: 368,
+        objectType: 'interactable',
+        texture: 'npc_laurenze',
+        speaker: 'Laurenze',
+        lines: [
+          "The final clearance packet must reach the central hub — but servers have different latency delays!",
+          "The path with fewest hops is NOT always the fastest. Edge weights matter.",
+          "Use Dijkstra's Algorithm: always expand the unvisited node with the smallest known distance.",
+        ],
+        action: { type: 'minigame', scene: 'ServerRouting', algorithm: ALGORITHMS.DIJKSTRA },
+      },
+      {
+        // Ground — Prof. Andrew closing
+        id: 'l7-prof-andrew',
+        x: 2200, y: 524,
+        objectType: 'npc',
+        texture: 'npc_professor',
+        speaker: 'Prof. Andrew',
+        lines: [
+          "Greed is sometimes good — algorithmically speaking!",
+          "Kruskal's and Prim's connect networks with the absolute minimum resources — greedy and optimal.",
+          "Dijkstra's found the true fastest path despite heavy traffic on shorter routes.",
+          "And Huffman's compressed data beautifully based on character frequency. You have mastered the grid, Dodo.",
+        ],
+        action: null,
+      },
+    ],
+    exit: { x: 2700, y: 524 },
+  },
+
+  // ── LEVEL 8 ──────────────────────────────────────────────────────────────
+  {
+    id: 'level8',
+    name: 'Level 8: The Final Algorithmic Trial',
+    subtitle: 'All Guides',
+    worldWidth: 3400,
+    bgColor: '#0a0a1a',
+    playerStart: { x: 120, y: 450 },
+
+    // Plat A: x=700,  y=430 → obstacle y≈408  (QueenGrid)
+    // Plat B: x=1400, y=390 → obstacle y≈368  (ComplexityGate featured)
+    // Plat C: x=2100, y=430 → obstacle y≈408
+    platforms: [
+      { x: 1700, y: 568, scaleX: 53.125, scaleY: 2 },
+      { x: 700,  y: 430, scaleX: 4,      scaleY: 1 },
+      { x: 1400, y: 390, scaleX: 4,      scaleY: 1 },
+      { x: 2100, y: 430, scaleX: 4,      scaleY: 1 },
+    ],
+
+    parallax: [
+      { type: 'stars', scrollFactor: 0.02 },
+      { type: 'stars', scrollFactor: 0.12 },
+    ],
+
+    obstacles: [
+      {
+        id: 'l8-intro',
+        x: 300, y: 524,
+        objectType: 'npc',
+        texture: 'npc_professor',
+        speaker: 'Prof. Andrew',
+        lines: [
+          "Dodo, before you leave Earth, there is one final lesson.",
+          "Some problems are too large to solve by simply trying everything. We need smarter ways to search.",
+          "Or we need to understand WHY a problem is difficult in the first place.",
+        ],
+        action: null,
+      },
+      {
+        id: 'l8-intro-guides',
+        x: 500, y: 524,
+        objectType: 'npc',
+        texture: 'npc_laurenze',
+        speaker: 'Laurenze',
+        lines: [
+          "This is where things get serious.",
+          "Trizy: No more simple sorting.",
+          "Jacob: No more easy paths.",
+          "Kyla: Time for the final trial.",
+        ],
+        action: null,
+      },
+      {
+        // ON Platform A — QueenGrid (Backtracking)
+        id: 'l8-queens',
+        x: 700, y: 408,
+        objectType: 'interactable',
+        texture: 'npc_jacob',
+        speaker: 'Jacob',
+        lines: [
+          "The launch defense system is active! Place security queens so none can attack each other.",
+          "Place one queen per row. If a placement makes the next row impossible, backtrack.",
+          "Don't keep going if you already know the setup is impossible — that's the key idea.",
+        ],
+        action: { type: 'minigame', scene: 'QueenGrid', algorithm: ALGORITHMS.BACKTRACKING },
+      },
+      {
+        // Ground — RouteOptimizer (Branch-and-Bound)
+        id: 'l8-bnb',
+        x: 1100, y: 524,
+        objectType: 'interactable',
+        texture: 'npc_trizy',
+        speaker: 'Trizy',
+        lines: [
+          "The ship's emergency fuel route is unstable. We need the cheapest route through all stations!",
+          "We branch into possible routes, but calculate a bound. If a partial route can't beat the best, stop.",
+          "Branch-and-Bound: explore promising paths, prune paths whose bound exceeds the current best.",
+        ],
+        action: { type: 'minigame', scene: 'RouteOptimizer', algorithm: ALGORITHMS.BRANCH_AND_BOUND },
+      },
+      {
+        // ON Platform B (featured) — ComplexityGate
+        id: 'l8-complexity',
+        x: 1400, y: 368,
+        objectType: 'interactable',
+        texture: 'npc_kyla',
+        speaker: 'Kyla',
+        lines: [
+          "A final lock appears — three doors labelled P, NP, and NP-Complete.",
+          "Complexity theory helps us classify problems based on how difficult they are to solve.",
+          "Drag each problem card into the correct door to open the gate!",
+        ],
+        action: { type: 'minigame', scene: 'ComplexityGate', algorithm: ALGORITHMS.COMPLEXITY_THEORY },
+      },
+      {
+        // Ground — Prof. Andrew final speech
+        id: 'l8-prof-andrew',
+        x: 2700, y: 524,
+        objectType: 'npc',
+        texture: 'npc_professor',
+        speaker: 'Prof. Andrew',
+        lines: [
+          "You have now reached the boundary of algorithmic power.",
+          "Backtracking: search intelligently by cutting off impossible paths early.",
+          "Branch-and-Bound: solve hard optimisation by pruning branches that cannot beat the best solution.",
+          "Complexity Theory: some problems are easy to solve, some easy to verify, and some define the limits of computation.",
+          "Dodo, you are ready to leave Earth.",
+        ],
+        action: null,
+      },
+    ],
+    exit: { x: 3300, y: 524 },
+  },
 ];

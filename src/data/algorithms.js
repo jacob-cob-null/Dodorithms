@@ -90,4 +90,60 @@ export const ALGORITHMS = {
     name: 'Merge Sort',
     description: 'Split, sort halves, merge back. Guaranteed O(n log n) — stable and predictable.',
   },
+
+  // ── Level 6 ─────────────────────────────────────────────────────────────
+  PRIORITY_QUEUE: {
+    id: 'priority-queue',
+    name: 'Priority Queue / Heap',
+    description: 'Always extract the highest-priority element in O(log n) using a max-heap.',
+  },
+  PRESORT: {
+    id: 'presort',
+    name: 'PreSorting',
+    description: 'Sort data once as preprocessing so every subsequent search is O(log n).',
+  },
+  CHANGE_MAKING: {
+    id: 'change-making',
+    name: 'Change-Making (DP)',
+    description: 'Find the minimum number of coins for a target using dynamic programming.',
+  },
+  KNAPSACK: {
+    id: 'knapsack',
+    name: '0/1 Knapsack',
+    description: 'Select items to maximise value within a weight limit using a DP table.',
+  },
+
+  // ── Level 7 ─────────────────────────────────────────────────────────────
+  KRUSKAL_PRIM: {
+    id: 'kruskal-prim',
+    name: "Kruskal's / Prim's",
+    description: 'Build a Minimum Spanning Tree connecting all nodes with the lowest total edge weight.',
+  },
+  HUFFMAN: {
+    id: 'huffman',
+    name: 'Huffman Coding',
+    description: 'Greedy data compression: assign shortest bit-codes to the most-frequent characters.',
+  },
+  DIJKSTRA: {
+    id: 'dijkstra',
+    name: "Dijkstra's Algorithm",
+    description: 'Find the shortest path in a weighted graph by always expanding the nearest unvisited node.',
+  },
+
+  // ── Level 8 ─────────────────────────────────────────────────────────────
+  BACKTRACKING: {
+    id: 'backtracking',
+    name: 'Backtracking',
+    description: 'Build solutions one step at a time; abandon paths that cannot lead to a valid answer.',
+  },
+  BRANCH_AND_BOUND: {
+    id: 'branch-and-bound',
+    name: 'Branch-and-Bound',
+    description: "Optimize by pruning branches whose best-possible cost can't beat the current best solution.",
+  },
+  COMPLEXITY_THEORY: {
+    id: 'complexity-theory',
+    name: 'Complexity Theory (P/NP)',
+    description: 'Classify problems by difficulty: P (efficiently solvable), NP (efficiently verifiable), NP-Complete.',
+  },
 };
