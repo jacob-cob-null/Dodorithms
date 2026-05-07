@@ -412,4 +412,115 @@ export const LEVELS = [
     ],
     exit: { x: 2700, y: 524 },
   },
+
+  // ── LEVEL 5 ──────────────────────────────────────────────────────────────
+  {
+    id: 'level5',
+    name: 'Level 5: The Intergalactic Census',
+    subtitle: 'Guides: All',
+    worldWidth: 3200,
+    bgColor: '#050b18',
+    playerStart: { x: 120, y: 450 },
+
+    // 4 elevated platforms to spread out 4 algorithm obstacles
+    // Plat A: x=650,  y=430 → surface=422 → obs y≈408
+    // Plat B: x=1300, y=390 → surface=382 → obs y≈368  (binary search)
+    // Plat C: x=1950, y=430 → surface=422 → obs y≈408
+    // Plat D: x=2600, y=370 → surface=362 → obs y≈348  (featured merge sort)
+    platforms: [
+      { x: 1600, y: 568, scaleX: 50,    scaleY: 2 },
+      { x: 650,  y: 430, scaleX: 4,     scaleY: 1 },
+      { x: 1300, y: 390, scaleX: 4,     scaleY: 1 },
+      { x: 1950, y: 430, scaleX: 4,     scaleY: 1 },
+      { x: 2600, y: 370, scaleX: 4,     scaleY: 1 },
+    ],
+
+    parallax: [
+      { type: 'stars', scrollFactor: 0.02 },
+      { type: 'stars', scrollFactor: 0.12 },
+    ],
+
+    obstacles: [
+      {
+        id: 'l5-intro',
+        x: 350, y: 524,
+        objectType: 'npc',
+        texture: 'npc_laurenze',
+        speaker: 'Laurenze',
+        lines: [
+          "Dodo! We've all been waiting — Trizy, Jacob, Kyla and I.",
+          "The Intergalactic Census Bureau needs help. They're drowning in unsorted alien data.",
+          "Four algorithms to master here — searching and sorting at scale. Let's go!",
+        ],
+        action: null,
+      },
+      {
+        id: 'l5-binary',
+        x: 650, y: 408,
+        objectType: 'interactable',
+        texture: 'npc_trizy',
+        speaker: 'Trizy',
+        lines: [
+          "The star registry is sorted — we can exploit that!",
+          "Binary search: check the middle, cut the range in half, repeat.",
+          "O(log n) — 10 elements needs at most 4 checks. One million? Just 20!",
+        ],
+        action: { type: 'minigame', scene: 'BinarySearch', algorithm: ALGORITHMS.BINARY_SEARCH },
+      },
+      {
+        id: 'l5-interpolation',
+        x: 1300, y: 368,
+        objectType: 'interactable',
+        texture: 'npc_jacob',
+        speaker: 'Jacob',
+        lines: [
+          "Binary search always checks the middle. But what if we're smarter?",
+          "If the data is evenly spread, we can estimate WHERE the value likely is.",
+          "Interpolation Search — like guessing a page in a dictionary instead of opening the middle!",
+        ],
+        action: { type: 'minigame', scene: 'InterpolationSearch', algorithm: ALGORITHMS.INTERPOLATION_SEARCH },
+      },
+      {
+        id: 'l5-quicksort',
+        x: 1950, y: 408,
+        objectType: 'interactable',
+        texture: 'npc_kyla',
+        speaker: 'Kyla',
+        lines: [
+          "This cargo manifest is a mess. We need it sorted FAST.",
+          "Pick any element as the pivot — everything smaller goes left, larger goes right.",
+          "Quicksort! Each pivot lands in its final position. O(n log n) on average.",
+        ],
+        action: { type: 'minigame', scene: 'QuickSort', algorithm: ALGORITHMS.QUICKSORT },
+      },
+      {
+        id: 'l5-census',
+        x: 2600, y: 348,
+        objectType: 'interactable',
+        texture: 'npc_laurenze',
+        speaker: 'Laurenze',
+        lines: [
+          "Two star systems sent us their census data — each already sorted!",
+          "We merge them: compare the front of each list, take the smaller, repeat.",
+          "Merge Sort — O(n log n) guaranteed, never has a bad day unlike Quicksort!",
+        ],
+        action: { type: 'minigame', scene: 'IntergalacticCensus', algorithm: ALGORITHMS.MERGE_SORT },
+      },
+      {
+        id: 'l5-prof-andrew',
+        x: 2950, y: 524,
+        objectType: 'npc',
+        texture: 'npc_professor',
+        speaker: 'Prof. Andrew',
+        lines: [
+          "You've now seen the O(log n) searching algorithms — binary and interpolation.",
+          "And the O(n log n) sorting giants — Quicksort and Merge Sort.",
+          "Binary search needs sorted data. Quicksort is fast in practice. Merge Sort never degrades.",
+          "Understanding these trade-offs — THAT is the heart of algorithm design!",
+        ],
+        action: null,
+      },
+    ],
+    exit: { x: 3100, y: 524 },
+  },
 ];

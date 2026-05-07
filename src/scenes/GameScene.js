@@ -197,6 +197,7 @@ export default class GameScene extends Phaser.Scene {
     if (id === 'level2') this._drawLevel2Props(worldWidth);
     if (id === 'level3') this._drawLevel3Props(worldWidth);
     if (id === 'level4') this._drawLevel4Props(worldWidth);
+    if (id === 'level5') this._drawLevel5Props(worldWidth);
   }
 
   _drawStars(g, W) {
@@ -391,6 +392,68 @@ export default class GameScene extends Phaser.Scene {
     conduit.lineBetween(0, 2, W, 2);
     conduit.fillStyle(0x06b6d4, 0.06);
     conduit.fillRect(0, 0, W, 5);
+  }
+
+  _drawLevel5Props(W) {
+    // Deep space — nebula patches
+    const nebula = this.add.graphics();
+    [[400,300,180,0x3730a3],[1200,200,140,0x1e1b4b],[2000,350,160,0x312e81],[2800,250,130,0x1d4ed8]].forEach(([nx,ny,r,c]) => {
+      nebula.fillStyle(c, 0.05);
+      nebula.fillEllipse(nx, ny, r * 2.4, r);
+    });
+
+    // Large planets in background
+    [[320, 180, 48, 0x7c3aed],[1600, 140, 36, 0x1e40af],[2700, 200, 55, 0x065f46]].forEach(([px,py,pr,pc]) => {
+      const g = this.add.graphics();
+      g.fillStyle(pc, 0.22);
+      g.fillCircle(px, py, pr);
+      g.lineStyle(1, pc, 0.18);
+      g.strokeCircle(px, py, pr);
+      // Ring
+      g.lineStyle(2, pc, 0.12);
+      g.strokeEllipse(px, py, pr * 3.2, pr * 0.6);
+    });
+
+    // Census terminal stations along floor
+    [250, 700, 1150, 1600, 2050, 2500, 2950].forEach(tx => {
+      const term = this.add.graphics();
+      term.fillStyle(0x0c1445, 1); term.fillRect(-16, -56, 32, 56);
+      term.lineStyle(1, 0x3730a3, 0.5); term.strokeRect(-16, -56, 32, 56);
+      // Screen glow
+      term.fillStyle(0x60a5fa, 0.12); term.fillRect(-12, -50, 24, 24);
+      term.lineStyle(1, 0x60a5fa, 0.3); term.strokeRect(-12, -50, 24, 24);
+      // Data lines on screen
+      for (let l = 0; l < 3; l++) {
+        term.fillStyle(0x60a5fa, 0.2); term.fillRect(-10, -44 + l * 7, 14 + l * 4, 3);
+      }
+      term.x = tx; term.y = 552;
+    });
+
+    // Starfield dust (tiny dots at ground level)
+    const dust = this.add.graphics();
+    for (let i = 0; i < 60; i++) {
+      const dx = (i * 137.5) % W;
+      const dy = 520 + (i % 4) * 8;
+      dust.fillStyle(0x60a5fa, 0.08 + (i % 3) * 0.06);
+      dust.fillCircle(dx, dy, 1 + (i % 2));
+    }
+
+    // Census data beams (vertical scan lines)
+    const beam = this.add.graphics();
+    [500, 1100, 1800, 2400].forEach(bx => {
+      beam.lineStyle(1, 0x3730a3, 0.1);
+      beam.lineBetween(bx, 0, bx, 560);
+    });
+
+    // Highlighted census arch above Platform D (featured)
+    const arch = this.add.graphics();
+    arch.lineStyle(2, 0x60a5fa, 0.4);
+    arch.strokeRect(2554, 308, 92, 54);
+    arch.fillStyle(0x60a5fa, 0.04);
+    arch.fillRect(2554, 308, 92, 54);
+    // Orbital ring above
+    arch.lineStyle(1, 0x60a5fa, 0.2);
+    arch.strokeEllipse(2600, 295, 120, 30);
   }
 
   _drawLevel4Props(W) {

@@ -68,4 +68,26 @@ export const ALGORITHMS = {
     name: 'Breadth-First Search',
     description: 'Explore all neighbours at the current depth before going deeper. Guarantees shortest path.',
   },
+
+  // ── Level 5 ─────────────────────────────────────────────────────────────
+  BINARY_SEARCH: {
+    id: 'binary-search',
+    name: 'Binary Search',
+    description: 'Halve the search range each step by checking the midpoint. O(log n).',
+  },
+  INTERPOLATION_SEARCH: {
+    id: 'interpolation-search',
+    name: 'Interpolation Search',
+    description: 'Estimate position by value distribution. Faster than binary on uniform data.',
+  },
+  QUICKSORT: {
+    id: 'quicksort',
+    name: 'Quicksort',
+    description: 'Pick a pivot, partition around it, recursively sort sub-arrays. O(n log n) average.',
+  },
+  MERGE_SORT: {
+    id: 'merge-sort',
+    name: 'Merge Sort',
+    description: 'Split, sort halves, merge back. Guaranteed O(n log n) — stable and predictable.',
+  },
 };
