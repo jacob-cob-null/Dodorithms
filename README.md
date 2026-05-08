@@ -1,4 +1,4 @@
-# DoDorithm's!
+# DoDorithms!
 
 Welcome to Dodo's Algorithmic Adventure, a story-driven platformer where every obstacle is a playful, hands-on algorithm puzzle. Crash-land on Earth in the 2070s, meet a squad of quirky human guides, and help Dodo earn a way home by mastering the logic that powers the future.
 
