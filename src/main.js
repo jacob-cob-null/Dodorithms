@@ -38,6 +38,14 @@ const config = {
   width: 800,
   height: 600,
   backgroundColor: "#0d1117",
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+  },
+  render: {
+    pixelArt: true,
+    antialias: false,
+  },
   physics: {
     default: "arcade",
     arcade: {

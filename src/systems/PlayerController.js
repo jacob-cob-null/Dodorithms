@@ -23,7 +23,7 @@ export default class PlayerController {
     }
   }
 
-  update() {
+  update(time, delta) {
     if (!this.enabled) {
       return;
     }
@@ -37,14 +37,27 @@ export default class PlayerController {
 
     if (left) {
       this.player.setVelocityX(-200);
+      this.player.setFlipX(true);
     } else if (right) {
       this.player.setVelocityX(200);
+      this.player.setFlipX(false);
     } else {
       this.player.setVelocityX(0);
     }
 
     if (jumpPressed && this.player.body.blocked.down) {
       this.player.setVelocityY(-380);
+    }
+
+    // Animation state machine
+    const onGround = this.player.body.blocked.down;
+    const movingH = left || right;
+    const newState = !onGround ? 'jump' : movingH ? 'walk' : 'idle';
+    if (newState !== this.player.state) {
+      this.player.state = newState;
+      // Tint as visual stand-in until real spritesheets arrive
+      const tints = { idle: 0x22c55e, walk: 0x4ade80, jump: 0x86efac };
+      this.player.setTint(tints[newState]);
     }
   }
 }

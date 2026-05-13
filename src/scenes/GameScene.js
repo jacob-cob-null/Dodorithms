@@ -182,28 +182,41 @@ export default class GameScene extends Phaser.Scene {
   //  BACKGROUND / PARALLAX
   // ─────────────────────────────────────────────────────────────────────────
 
+  _seededRandom(seed) {
+    let s = seed;
+    return function () {
+      s |= 0; s = s + 0x6d2b79f5 | 0;
+      let t = Math.imul(s ^ s >>> 15, 1 | s);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
   buildBackground(levelConfig) {
     const { worldWidth, parallax, id } = levelConfig;
     if (!parallax) return;
 
+    const seed = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    const rng = this._seededRandom(seed);
+
     parallax.forEach(layer => {
       const g = this.add.graphics().setScrollFactor(layer.scrollFactor);
-      if (layer.type === 'stars')    this._drawStars(g, worldWidth);
-      if (layer.type === 'cityFar')  this._drawCityFar(g, worldWidth);
-      if (layer.type === 'cityNear') this._drawCityNear(g, worldWidth);
+      if (layer.type === 'stars')    this._drawStars(g, worldWidth, rng);
+      if (layer.type === 'cityFar')  this._drawCityFar(g, worldWidth, rng);
+      if (layer.type === 'cityNear') this._drawCityNear(g, worldWidth, rng);
     });
 
-    if (id === 'level1') this._drawLevel1Props(worldWidth);
-    if (id === 'level2') this._drawLevel2Props(worldWidth);
-    if (id === 'level3') this._drawLevel3Props(worldWidth);
-    if (id === 'level4') this._drawLevel4Props(worldWidth);
-    if (id === 'level5') this._drawLevel5Props(worldWidth);
-    if (id === 'level6') this._drawLevel6Props(worldWidth);
-    if (id === 'level7') this._drawLevel7Props(worldWidth);
-    if (id === 'level8') this._drawLevel8Props(worldWidth);
+    if (id === 'level1') this._drawLevel1Props(worldWidth, rng);
+    if (id === 'level2') this._drawLevel2Props(worldWidth, rng);
+    if (id === 'level3') this._drawLevel3Props(worldWidth, rng);
+    if (id === 'level4') this._drawLevel4Props(worldWidth, rng);
+    if (id === 'level5') this._drawLevel5Props(worldWidth, rng);
+    if (id === 'level6') this._drawLevel6Props(worldWidth, rng);
+    if (id === 'level7') this._drawLevel7Props(worldWidth, rng);
+    if (id === 'level8') this._drawLevel8Props(worldWidth, rng);
   }
 
-  _drawStars(g, W) {
+  _drawStars(g, W, rng) {
     // Sky base
     g.fillStyle(0x060d17, 1);
     g.fillRect(0, 0, W, 545);
@@ -212,8 +225,8 @@ export default class GameScene extends Phaser.Scene {
     for (let i = 0; i < 220; i++) {
       const x = Phaser.Math.Between(0, W);
       const y = Phaser.Math.Between(0, 420);
-      const sz = Math.random() > 0.85 ? 2 : 1;
-      const blue = Math.random() > 0.6;
+      const sz = rng() > 0.85 ? 2 : 1;
+      const blue = rng() > 0.6;
       g.fillStyle(blue ? 0x93c5fd : 0xffffff, Phaser.Math.FloatBetween(0.2, 1));
       g.fillRect(x, y, sz, sz);
     }
@@ -233,7 +246,7 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  _drawCityFar(g, W) {
+  _drawCityFar(g, W, rng) {
     // Very dark distant silhouettes
     let x = 0;
     while (x < W) {
@@ -246,7 +259,7 @@ export default class GameScene extends Phaser.Scene {
       // Window grid
       for (let wy = by + 8; wy < 534; wy += 13) {
         for (let wx = x + 4; wx < x + bw - 4; wx += 10) {
-          if (Math.random() > 0.44) {
+          if (rng() > 0.44) {
             g.fillStyle(0x1e4d7a, Phaser.Math.FloatBetween(0.3, 0.85));
             g.fillRect(wx, wy, 4, 7);
           }
@@ -254,7 +267,7 @@ export default class GameScene extends Phaser.Scene {
       }
 
       // Antenna spire
-      if (Math.random() > 0.45) {
+      if (rng() > 0.45) {
         g.fillStyle(0x152840, 1);
         g.fillRect(x + Math.floor(bw / 2) - 1, by - 20, 2, 20);
         g.fillStyle(0xef4444, 0.7);
@@ -265,14 +278,14 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  _drawCityNear(g, W) {
+  _drawCityNear(g, W, rng) {
     const NEONS = [0xf59e0b, 0x38bdf8, 0xa855f7, 0xef4444, 0x4ade80];
     let x = 0;
     while (x < W) {
       const bw = Phaser.Math.Between(52, 112);
       const bh = Phaser.Math.Between(50, 148);
       const by = 540 - bh;
-      const accent = NEONS[Math.floor(Math.random() * NEONS.length)];
+      const accent = NEONS[Math.floor(rng() * NEONS.length)];
 
       g.fillStyle(0x0d1f35, 1);
       g.fillRect(x, by, bw, bh);
@@ -288,8 +301,8 @@ export default class GameScene extends Phaser.Scene {
       // Windows (larger)
       for (let wy = by + 16; wy < 528; wy += 18) {
         for (let wx = x + 6; wx < x + bw - 6; wx += 14) {
-          if (Math.random() > 0.38) {
-            g.fillStyle(Math.random() > 0.65 ? accent : 0xfbbf24,
+          if (rng() > 0.38) {
+            g.fillStyle(rng() > 0.65 ? accent : 0xfbbf24,
               Phaser.Math.FloatBetween(0.25, 0.65));
             g.fillRect(wx, wy, 7, 10);
           }
@@ -297,7 +310,7 @@ export default class GameScene extends Phaser.Scene {
       }
 
       // Billboard rectangle on some buildings
-      if (Math.random() > 0.7) {
+      if (rng() > 0.7) {
         g.fillStyle(accent, 0.18);
         g.fillRect(x + 6, by + 10, bw - 12, 22);
         g.lineStyle(1, accent, 0.5);
@@ -308,7 +321,7 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  _drawLevel1Props(W) {
+  _drawLevel1Props(W, rng) {
     // Crashed spaceship wreckage — near player spawn
     const wreck = this.add.graphics();
     wreck.fillStyle(0x1e293b, 1); wreck.fillRect(0, 0, 100, 35);
@@ -346,7 +359,7 @@ export default class GameScene extends Phaser.Scene {
     strip.lineBetween(0, 553, W, 553);
   }
 
-  _drawLevel2Props(W) {
+  _drawLevel2Props(W, rng) {
     // Server racks along the floor
     [200, 500, 800, 1200, 1600, 2000, 2400].forEach(rx => {
       const rack = this.add.graphics();
@@ -354,12 +367,12 @@ export default class GameScene extends Phaser.Scene {
       rack.lineStyle(1, 0x1e3a5f, 1); rack.strokeRect(-14, -64, 28, 64);
       // Drive bays
       for (let row = 0; row < 5; row++) {
-        const lit = Math.random() > 0.4;
+        const lit = rng() > 0.4;
         rack.fillStyle(lit ? 0x06b6d4 : 0x1e3a5f, lit ? 0.8 : 0.3);
         rack.fillRect(-10, -58 + row * 11, 20, 7);
       }
       // Status light
-      rack.fillStyle(Math.random() > 0.2 ? 0x4ade80 : 0xef4444, 1);
+      rack.fillStyle(rng() > 0.2 ? 0x4ade80 : 0xef4444, 1);
       rack.fillRect(6, -62, 4, 4);
       rack.x = rx; rack.y = 552;
     });
@@ -397,7 +410,7 @@ export default class GameScene extends Phaser.Scene {
     conduit.fillRect(0, 0, W, 5);
   }
 
-  _drawLevel5Props(W) {
+  _drawLevel5Props(W, rng) {
     // Deep space — nebula patches
     const nebula = this.add.graphics();
     [[400,300,180,0x3730a3],[1200,200,140,0x1e1b4b],[2000,350,160,0x312e81],[2800,250,130,0x1d4ed8]].forEach(([nx,ny,r,c]) => {
@@ -459,7 +472,7 @@ export default class GameScene extends Phaser.Scene {
     arch.strokeEllipse(2600, 295, 120, 30);
   }
 
-  _drawLevel4Props(W) {
+  _drawLevel4Props(W, rng) {
     // Train tracks along the floor (two parallel rails)
     const track = this.add.graphics();
     track.lineStyle(3, 0x334155, 0.7);
@@ -516,7 +529,7 @@ export default class GameScene extends Phaser.Scene {
     });
   }
 
-  _drawLevel3Props(W) {
+  _drawLevel3Props(W, rng) {
     // Bio-hazard floor stripe
     const stripe = this.add.graphics();
     for (let x = 0; x < W; x += 40) {
@@ -575,7 +588,7 @@ export default class GameScene extends Phaser.Scene {
     arch.fillRect(1400, 330, 100, 52);
   }
 
-  _drawLevel6Props(W) {
+  _drawLevel6Props(W, rng) {
     // Deep-space hull floor strip
     const hull = this.add.graphics();
     for (let x = 0; x < W; x += 60) {
@@ -677,7 +690,7 @@ export default class GameScene extends Phaser.Scene {
     conduit.lineBetween(0, 18, W, 18);
   }
 
-  _drawLevel7Props(W) {
+  _drawLevel7Props(W, rng) {
     // Launchpad floor markings (dashed yellow lines)
     const markings = this.add.graphics();
     for (let x = 0; x < W; x += 50) {
@@ -752,14 +765,14 @@ export default class GameScene extends Phaser.Scene {
     conduit.lineBetween(0, 16, W, 16);
   }
 
-  _drawLevel8Props(W) {
+  _drawLevel8Props(W, rng) {
     // Dense starfield (climactic finale)
     const stars = this.add.graphics();
     for (let i = 0; i < 350; i++) {
       const sx = Phaser.Math.Between(0, W);
       const sy = Phaser.Math.Between(0, 420);
-      const sz = Math.random() > 0.9 ? 2 : 1;
-      const blue = Math.random() > 0.5;
+      const sz = rng() > 0.9 ? 2 : 1;
+      const blue = rng() > 0.5;
       stars.fillStyle(blue ? 0x93c5fd : 0xffffff, Phaser.Math.FloatBetween(0.1, 0.9));
       stars.fillRect(sx, sy, sz, sz);
     }
@@ -863,8 +876,8 @@ export default class GameScene extends Phaser.Scene {
     EventBus.off(EVENTS.PUZZLE_COMPLETE, this._onPuzzleComplete, this);
   }
 
-  update() {
-    this.playerController?.update();
-    this.interactionSystem?.update();
+  update(time, delta) {
+    this.playerController?.update(time, delta);
+    this.interactionSystem?.update(time, delta);
   }
 }
