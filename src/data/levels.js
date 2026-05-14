@@ -13,9 +13,9 @@ export const LEVELS = [
     // Platform surface = platform_y - 8 (scaleY=1 → half height=8).
     platforms: [
       { x: 1300, y: 568, scaleX: 40.625, scaleY: 2 }, // ground (full width)
-      { x: 650,  y: 483, scaleX: 4.5,    scaleY: 1 }, // A: surface=475, spans ~506–794
-      { x: 1300, y: 478, scaleX: 5,      scaleY: 1 }, // B: surface=470, spans ~140–1460
-      { x: 1980, y: 483, scaleX: 4.5,    scaleY: 1 }, // C: surface=475, spans ~1836–2124
+      { x: 650,  y: 490, scaleX: 4.5,    scaleY: 1 }, // A
+      { x: 1300, y: 490, scaleX: 5,      scaleY: 1 }, // B
+      { x: 1980, y: 490, scaleX: 4.5,    scaleY: 1 }, // C
     ],
 
     // Parallax background layers (drawn back-to-front by GameScene)
@@ -43,7 +43,7 @@ export const LEVELS = [
       {
         // ON Platform A (surface=475) — Dodo must jump up to reach it
         id: 'l1-shattered-pad',
-        x: 650, y: 461,
+        x: 650, y: 468,
         objectType: 'interactable',
         texture: 'interactable',
         speaker: 'Laurenze',
@@ -72,7 +72,7 @@ export const LEVELS = [
       {
         // ON Platform B (surface=470) — jump up again
         id: 'l1-smartphone',
-        x: 1300, y: 446,
+        x: 1300, y: 468,
         objectType: 'interactable',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -86,7 +86,7 @@ export const LEVELS = [
       {
         // ON Platform C (surface=475) — final climb before exit
         id: 'l1-prof-andrew',
-        x: 1980, y: 451,
+        x: 1980, y: 468,
         objectType: 'npc',
         texture: 'npc_professor',
         speaker: 'Prof. Andrew',
@@ -118,9 +118,9 @@ export const LEVELS = [
     // Plat C: x=2150, y=430 → surface=422 → obstacle y≈408
     platforms: [
       { x: 1400, y: 568, scaleX: 43.75, scaleY: 2 }, // ground
-      { x: 700,  y: 430, scaleX: 4,     scaleY: 1 }, // A
-      { x: 1450, y: 390, scaleX: 4,     scaleY: 1 }, // B (higher)
-      { x: 2150, y: 430, scaleX: 4,     scaleY: 1 }, // C
+      { x: 700,  y: 450, scaleX: 4,     scaleY: 1 }, // A
+      { x: 1450, y: 420, scaleX: 4,     scaleY: 1 }, // B
+      { x: 2150, y: 450, scaleX: 4,     scaleY: 1 }, // C
     ],
 
     parallax: [
@@ -146,7 +146,7 @@ export const LEVELS = [
       {
         // ON Platform A (surface=422) — first jump
         id: 'l2-fraud',
-        x: 700, y: 408,
+        x: 700, y: 428,
         objectType: 'interactable',
         texture: 'npc_trizy',
         speaker: 'Trizy',
@@ -174,7 +174,7 @@ export const LEVELS = [
       {
         // ON Platform B (surface=382) — higher climb
         id: 'l2-guest-list',
-        x: 1450, y: 368,
+        x: 1450, y: 388,
         objectType: 'interactable',
         texture: 'interactable',
         speaker: 'Trizy',
@@ -188,7 +188,7 @@ export const LEVELS = [
       {
         // ON Platform C (surface=422) — final climb
         id: 'l2-tour',
-        x: 2150, y: 408,
+        x: 2150, y: 428,
         objectType: 'interactable',
         texture: 'npc_trizy',
         speaker: 'Trizy',
@@ -233,9 +233,9 @@ export const LEVELS = [
     // Plat C: x=2100, y=430 → surface=422 → obstacle y≈408
     platforms: [
       { x: 1400, y: 568, scaleX: 43.75, scaleY: 2 },
-      { x: 700,  y: 430, scaleX: 4,     scaleY: 1 },
-      { x: 1450, y: 390, scaleX: 4,     scaleY: 1 },
-      { x: 2100, y: 430, scaleX: 4,     scaleY: 1 },
+      { x: 700,  y: 450, scaleX: 4,     scaleY: 1 },
+      { x: 1450, y: 420, scaleX: 4,     scaleY: 1 },
+      { x: 2100, y: 450, scaleX: 4,     scaleY: 1 },
     ],
 
     parallax: [
@@ -262,7 +262,7 @@ export const LEVELS = [
       {
         // ON Platform A — Selection Sort
         id: 'l3-selection',
-        x: 700, y: 408,
+        x: 700, y: 428,
         objectType: 'interactable',
         texture: 'npc_jacob',
         speaker: 'Jacob',
@@ -290,7 +290,7 @@ export const LEVELS = [
       {
         // ON Platform B (higher) — BiologicalClearance featured minigame
         id: 'l3-bio-clearance',
-        x: 1450, y: 368,
+        x: 1450, y: 388,
         objectType: 'interactable',
         texture: 'npc_jacob',
         speaker: 'Jacob',
@@ -304,7 +304,7 @@ export const LEVELS = [
       {
         // ON Platform C — Prof. Andrew closing
         id: 'l3-prof-andrew',
-        x: 2100, y: 408,
+        x: 2100, y: 428,
         objectType: 'npc',
         texture: 'npc_professor',
         speaker: 'Prof. Andrew',
@@ -331,9 +331,9 @@ export const LEVELS = [
 
     platforms: [
       { x: 1400, y: 568, scaleX: 43.75, scaleY: 2 },
-      { x: 700,  y: 430, scaleX: 4,     scaleY: 1 },
-      { x: 1450, y: 390, scaleX: 4,     scaleY: 1 },
-      { x: 2100, y: 430, scaleX: 4,     scaleY: 1 },
+      { x: 700,  y: 450, scaleX: 4,     scaleY: 1 },
+      { x: 1450, y: 420, scaleX: 4,     scaleY: 1 },
+      { x: 2100, y: 450, scaleX: 4,     scaleY: 1 },
     ],
 
     parallax: [
@@ -358,7 +358,7 @@ export const LEVELS = [
       },
       {
         id: 'l4-insertion',
-        x: 700, y: 408,
+        x: 700, y: 428,
         objectType: 'interactable',
         texture: 'npc_kyla',
         speaker: 'Kyla',
@@ -384,7 +384,7 @@ export const LEVELS = [
       },
       {
         id: 'l4-hypertrain',
-        x: 1450, y: 368,
+        x: 1450, y: 388,
         objectType: 'interactable',
         texture: 'npc_kyla',
         speaker: 'Kyla',
@@ -397,7 +397,7 @@ export const LEVELS = [
       },
       {
         id: 'l4-prof-andrew',
-        x: 2100, y: 408,
+        x: 2100, y: 428,
         objectType: 'npc',
         texture: 'npc_professor',
         speaker: 'Prof. Andrew',
@@ -429,10 +429,10 @@ export const LEVELS = [
     // Plat D: x=2600, y=370 → surface=362 → obs y≈348  (featured merge sort)
     platforms: [
       { x: 1600, y: 568, scaleX: 50,    scaleY: 2 },
-      { x: 650,  y: 430, scaleX: 4,     scaleY: 1 },
-      { x: 1300, y: 390, scaleX: 4,     scaleY: 1 },
-      { x: 1950, y: 430, scaleX: 4,     scaleY: 1 },
-      { x: 2600, y: 370, scaleX: 4,     scaleY: 1 },
+      { x: 650,  y: 450, scaleX: 4,     scaleY: 1 },
+      { x: 1300, y: 420, scaleX: 4,     scaleY: 1 },
+      { x: 1950, y: 450, scaleX: 4,     scaleY: 1 },
+      { x: 2600, y: 420, scaleX: 4,     scaleY: 1 },
     ],
 
     parallax: [
@@ -456,7 +456,7 @@ export const LEVELS = [
       },
       {
         id: 'l5-binary',
-        x: 650, y: 408,
+        x: 650, y: 428,
         objectType: 'interactable',
         texture: 'npc_trizy',
         speaker: 'Trizy',
@@ -469,7 +469,7 @@ export const LEVELS = [
       },
       {
         id: 'l5-interpolation',
-        x: 1300, y: 368,
+        x: 1300, y: 388,
         objectType: 'interactable',
         texture: 'npc_jacob',
         speaker: 'Jacob',
@@ -482,7 +482,7 @@ export const LEVELS = [
       },
       {
         id: 'l5-quicksort',
-        x: 1950, y: 408,
+        x: 1950, y: 428,
         objectType: 'interactable',
         texture: 'npc_kyla',
         speaker: 'Kyla',
@@ -495,7 +495,7 @@ export const LEVELS = [
       },
       {
         id: 'l5-census',
-        x: 2600, y: 348,
+        x: 2600, y: 388,
         objectType: 'interactable',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -539,9 +539,9 @@ export const LEVELS = [
     // Plat C: x=2100, y=430 → surface=422 → obstacle y≈408  (CargoGrid featured)
     platforms: [
       { x: 1400, y: 568, scaleX: 43.75, scaleY: 2 },
-      { x: 700,  y: 430, scaleX: 4,     scaleY: 1 },
-      { x: 1450, y: 390, scaleX: 4,     scaleY: 1 },
-      { x: 2100, y: 430, scaleX: 4,     scaleY: 1 },
+      { x: 700,  y: 450, scaleX: 4,     scaleY: 1 },
+      { x: 1450, y: 420, scaleX: 4,     scaleY: 1 },
+      { x: 2100, y: 450, scaleX: 4,     scaleY: 1 },
     ],
 
     parallax: [
@@ -566,7 +566,7 @@ export const LEVELS = [
       {
         // ON Platform A — HeapPriority
         id: 'l6-heap',
-        x: 700, y: 408,
+        x: 700, y: 428,
         objectType: 'interactable',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -594,7 +594,7 @@ export const LEVELS = [
       {
         // ON Platform B — ChangeMaking
         id: 'l6-change',
-        x: 1450, y: 368,
+        x: 1450, y: 388,
         objectType: 'interactable',
         texture: 'npc_kyla',
         speaker: 'Kyla',
@@ -608,7 +608,7 @@ export const LEVELS = [
       {
         // ON Platform C — CargoGrid (featured)
         id: 'l6-cargo',
-        x: 2100, y: 408,
+        x: 2100, y: 428,
         objectType: 'interactable',
         texture: 'npc_trizy',
         speaker: 'Trizy',
@@ -653,9 +653,9 @@ export const LEVELS = [
     // Plat C: x=2100, y=430 → surface=422 → obstacle y≈408
     platforms: [
       { x: 1400, y: 568, scaleX: 43.75, scaleY: 2 },
-      { x: 700,  y: 430, scaleX: 4,     scaleY: 1 },
-      { x: 1450, y: 390, scaleX: 4,     scaleY: 1 },
-      { x: 2100, y: 430, scaleX: 4,     scaleY: 1 },
+      { x: 700,  y: 450, scaleX: 4,     scaleY: 1 },
+      { x: 1450, y: 420, scaleX: 4,     scaleY: 1 },
+      { x: 2100, y: 450, scaleX: 4,     scaleY: 1 },
     ],
 
     parallax: [
@@ -680,7 +680,7 @@ export const LEVELS = [
       {
         // ON Platform A — SpanningTree (Kruskal's)
         id: 'l7-spanning',
-        x: 700, y: 408,
+        x: 700, y: 428,
         objectType: 'interactable',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -708,7 +708,7 @@ export const LEVELS = [
       {
         // ON Platform B (featured) — ServerRouting (Dijkstra's)
         id: 'l7-routing',
-        x: 1450, y: 368,
+        x: 1450, y: 388,
         objectType: 'interactable',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -752,9 +752,9 @@ export const LEVELS = [
     // Plat C: x=2100, y=430 → obstacle y≈408
     platforms: [
       { x: 1700, y: 568, scaleX: 53.125, scaleY: 2 },
-      { x: 700,  y: 430, scaleX: 4,      scaleY: 1 },
-      { x: 1400, y: 390, scaleX: 4,      scaleY: 1 },
-      { x: 2100, y: 430, scaleX: 4,      scaleY: 1 },
+      { x: 700,  y: 450, scaleX: 4,      scaleY: 1 },
+      { x: 1400, y: 420, scaleX: 4,      scaleY: 1 },
+      { x: 2100, y: 450, scaleX: 4,      scaleY: 1 },
     ],
 
     parallax: [
@@ -793,7 +793,7 @@ export const LEVELS = [
       {
         // ON Platform A — QueenGrid (Backtracking)
         id: 'l8-queens',
-        x: 700, y: 408,
+        x: 700, y: 428,
         objectType: 'interactable',
         texture: 'npc_jacob',
         speaker: 'Jacob',
@@ -821,7 +821,7 @@ export const LEVELS = [
       {
         // ON Platform B (featured) — ComplexityGate
         id: 'l8-complexity',
-        x: 1400, y: 368,
+        x: 1400, y: 388,
         objectType: 'interactable',
         texture: 'npc_kyla',
         speaker: 'Kyla',

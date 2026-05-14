@@ -8,7 +8,21 @@ export default class MainMenuScene extends Phaser.Scene {
   create() {
     const W = 800, H = 600;
 
-    this.add.rectangle(W / 2, H / 2, W, H, 0x0d1117);
+    // Dark sky base
+    this.add.rectangle(W / 2, H / 2, W, H, 0x060d17);
+
+    // Wall band background — anchored to bottom
+    if (this.textures.exists('bg_menu')) {
+      const tex = this.textures.get('bg_menu').getSourceImage();
+      const bandH = 400;
+      const scale = bandH / tex.height;
+      this.add.tileSprite(W / 2, H, W, bandH, 'bg_menu')
+        .setOrigin(0.5, 1)
+        .setTileScale(scale, scale);
+    }
+
+    // Dark overlay so text remains readable
+    this.add.rectangle(W / 2, H / 2, W, H, 0x0d1117, 0.55);
 
     // Title
     this.add.text(W / 2, 160, "Dodo's Algorithmic Adventure", {

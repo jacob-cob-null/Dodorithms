@@ -8,6 +8,11 @@ import { EVENTS } from "../systems/events.js";
 import archiveSystem from "../systems/ArchiveSystem.js";
 import { LEVELS } from "../data/levels.js";
 
+const LEVEL_THEMES = {
+  level1: 'city', level2: 'tech', level3: 'lab', level4: 'train',
+  level5: 'space', level6: 'space', level7: 'network', level8: 'academy',
+};
+
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super("GameScene");
@@ -38,10 +43,15 @@ export default class GameScene extends Phaser.Scene {
     // ── Parallax background (must be first so it renders behind everything) ──
     this.buildBackground(levelConfig);
 
-    // Platforms
+    // Camera fade in
+    this.cameras.main.fadeIn(300, 0, 0, 0);
+
+    // Platforms — themed per level
+    const theme = LEVEL_THEMES[levelConfig.id] || 'city';
+    const platTex = this.textures.exists(`platform_${theme}`) ? `platform_${theme}` : 'platform';
     this.platforms = this.physics.add.staticGroup();
     platforms.forEach(p => {
-      this.platforms.create(p.x, p.y, 'platform').setScale(p.scaleX, p.scaleY).refreshBody();
+      this.platforms.create(p.x, p.y, platTex).setScale(p.scaleX, p.scaleY).refreshBody();
     });
 
     // Player
@@ -62,15 +72,15 @@ export default class GameScene extends Phaser.Scene {
 
     // HUD (fixed to camera)
     this.add.text(12, 12, levelConfig.name, {
-      fontFamily: 'sans-serif', fontSize: '14px', color: '#38bdf8',
+      fontFamily: '"Courier New", Courier, monospace', fontSize: '13px', color: '#38bdf8',
     }).setScrollFactor(0);
 
-    this.add.text(12, 30, levelConfig.subtitle, {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#475569',
+    this.add.text(12, 28, levelConfig.subtitle, {
+      fontFamily: '"Courier New", Courier, monospace', fontSize: '11px', color: '#334155',
     }).setScrollFactor(0);
 
-    this.add.text(400, 12, '← → to move   SPACE to jump   E to interact', {
-      fontFamily: 'sans-serif', fontSize: '11px', color: '#334155',
+    this.add.text(400, 10, '← → to move   SPACE to jump   E to interact', {
+      fontFamily: '"Courier New", Courier, monospace', fontSize: '10px', color: '#1e3a5f',
     }).setOrigin(0.5, 0).setScrollFactor(0);
 
     // Event listeners
@@ -104,6 +114,7 @@ export default class GameScene extends Phaser.Scene {
 
   buildObstacle(cfg) {
     const texture = this.textures.exists(cfg.texture) ? cfg.texture : 'npc';
+    const isRealNpc = cfg.texture && cfg.texture.startsWith('npc_') && this.textures.exists(cfg.texture);
     const sprite = new Interactable(this, cfg.x, cfg.y, texture, {
       id: cfg.id,
       onInteract: () => {
@@ -115,6 +126,21 @@ export default class GameScene extends Phaser.Scene {
         });
       },
     });
+
+    // Scale real NPC images down to game size
+    if (isRealNpc) sprite.setDisplaySize(48, 72);
+
+    // NPC idle bob tween
+    if (cfg.texture && cfg.texture.startsWith('npc_')) {
+      this.tweens.add({
+        targets: sprite,
+        y: cfg.y - 3,
+        duration: 1400 + Math.random() * 400,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.InOut',
+      });
+    }
 
     // Name label above sprite
     this.add.text(cfg.x, cfg.y - 34, cfg.speaker, {
@@ -155,23 +181,64 @@ export default class GameScene extends Phaser.Scene {
   }
 
   buildExitPortal(exitCfg) {
+    // Outer glow sprite (ADD blend behind portal)
+    const glow = this.add.sprite(exitCfg.x, exitCfg.y, 'portal');
+    glow.setAlpha(0.15).setScale(1.5).setBlendMode(Phaser.BlendModes.ADD);
+    this.tweens.add({
+      targets: glow,
+      alpha: 0.05,
+      scaleX: 1.7,
+      duration: 1200,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.InOut',
+    });
+
     const portal = new Interactable(this, exitCfg.x, exitCfg.y, 'portal', {
       id: 'exit-portal',
       onInteract: () => {
-        this.scene.start('GameScene', { levelIndex: this.levelIndex + 1 });
+        this.cameras.main.fadeOut(300, 0, 0, 0);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+          this.scene.start('GameScene', { levelIndex: this.levelIndex + 1 });
+        });
       },
     });
     this.interactionSystem.register(portal);
 
-    // Pulsing tween
+    // Breathing pulse — alpha + scaleX
     this.tweens.add({
       targets: portal,
-      alpha: 0.5,
+      alpha: 0.6,
+      scaleX: 0.95,
       duration: 900,
       yoyo: true,
       repeat: -1,
       ease: 'Sine.InOut',
     });
+
+    // Floating particles around portal
+    for (let i = 0; i < 6; i++) {
+      const px = exitCfg.x + Phaser.Math.Between(-14, 14);
+      const dot = this.add.graphics();
+      dot.fillStyle(0xa78bfa, 0.6);
+      dot.fillCircle(0, 0, 2);
+      dot.x = px;
+      dot.y = exitCfg.y + 20;
+      this.tweens.add({
+        targets: dot,
+        y: exitCfg.y - 30,
+        alpha: 0,
+        duration: 1200 + i * 200,
+        delay: i * 220,
+        repeat: -1,
+        ease: 'Sine.In',
+        onRepeat: () => {
+          dot.x = exitCfg.x + Phaser.Math.Between(-14, 14);
+          dot.y = exitCfg.y + 20;
+          dot.alpha = 0.6;
+        },
+      });
+    }
 
     this.add.text(exitCfg.x, exitCfg.y - 42, 'NEXT LEVEL', {
       fontFamily: 'sans-serif', fontSize: '12px', color: '#818cf8',
@@ -193,88 +260,245 @@ export default class GameScene extends Phaser.Scene {
   }
 
   buildBackground(levelConfig) {
-    const { worldWidth, parallax, id } = levelConfig;
+    const { worldWidth, parallax, id, bgColor } = levelConfig;
     if (!parallax) return;
 
     const seed = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
     const rng = this._seededRandom(seed);
 
     parallax.forEach(layer => {
+      if (layer.type === 'cityFar' || layer.type === 'cityNear') return;
       const g = this.add.graphics().setScrollFactor(layer.scrollFactor);
-      if (layer.type === 'stars')    this._drawStars(g, worldWidth, rng);
-      if (layer.type === 'cityFar')  this._drawCityFar(g, worldWidth, rng);
-      if (layer.type === 'cityNear') this._drawCityNear(g, worldWidth, rng);
+      if (layer.type === 'stars') this._drawStars(g, worldWidth, rng);
     });
+
+    // Wall band — anchored to bottom, tiles horizontally across world width
+    const bgKey = `bg_${id}`;
+    if (this.textures.exists(bgKey)) {
+      const tex = this.textures.get(bgKey).getSourceImage();
+      const bandH = 400;
+      const scale = bandH / tex.height;
+
+      const band = this.add.tileSprite(0, 600, worldWidth, bandH, bgKey)
+        .setOrigin(0, 1)
+        .setTileScale(scale, scale)
+        .setScrollFactor(0.8)
+        .setAlpha(0.92);
+
+      // Blur via preFX if supported (Phaser 4 WebGL)
+      if (band.preFX) {
+        band.preFX.addBlur(0, 2, 2, 0.8);
+      }
+
+      // Subtle dark overlay — 8%
+      const dark = this.add.graphics().setScrollFactor(0.8);
+      dark.fillStyle(0x000000, 0.08);
+      dark.fillRect(0, 200, worldWidth, 400);
+    }
 
     if (id === 'level1') this._drawLevel1Props(worldWidth, rng);
     if (id === 'level2') this._drawLevel2Props(worldWidth, rng);
-    if (id === 'level3') this._drawLevel3Props(worldWidth, rng);
+    if (id === 'level3') { this._drawLevel3Props(worldWidth, rng); this._addBioPulse(worldWidth); }
     if (id === 'level4') this._drawLevel4Props(worldWidth, rng);
-    if (id === 'level5') this._drawLevel5Props(worldWidth, rng);
-    if (id === 'level6') this._drawLevel6Props(worldWidth, rng);
-    if (id === 'level7') this._drawLevel7Props(worldWidth, rng);
-    if (id === 'level8') this._drawLevel8Props(worldWidth, rng);
+    if (id === 'level5') { this._drawLevel5Props(worldWidth, rng); this._addTwinkleStars(worldWidth); }
+    if (id === 'level6') { this._drawLevel6Props(worldWidth, rng); this._addGravityRingPulse(worldWidth); this._addTwinkleStars(worldWidth); }
+    if (id === 'level7') { this._drawLevel7Props(worldWidth, rng); this._addTwinkleStars(worldWidth); }
+    if (id === 'level8') { this._drawLevel8Props(worldWidth, rng); this._addTwinkleStars(worldWidth); }
+
+    // Ambient dust motes — floating particles across world
+    this._spawnDustMotes(worldWidth);
+  }
+
+  _spawnDustMotes(W) {
+    const count = 18;
+    for (let i = 0; i < count; i++) {
+      const dot = this.add.graphics().setScrollFactor(0.6);
+      const sz = rng => rng() > 0.6 ? 2 : 1;
+      dot.fillStyle(0xffffff, 0.04 + Math.random() * 0.05);
+      dot.fillRect(0, 0, Math.random() > 0.6 ? 2 : 1, Math.random() > 0.6 ? 2 : 1);
+      dot.x = Math.random() * W;
+      dot.y = 100 + Math.random() * 450;
+      const dur = 3000 + Math.random() * 4000;
+      this.tweens.add({
+        targets: dot,
+        y: dot.y - (60 + Math.random() * 80),
+        alpha: 0,
+        duration: dur,
+        delay: Math.random() * dur,
+        repeat: -1,
+        ease: 'Sine.In',
+        onRepeat: () => {
+          dot.x = Math.random() * W;
+          dot.y = 480 + Math.random() * 60;
+          dot.alpha = 0.04 + Math.random() * 0.05;
+        },
+      });
+    }
+  }
+
+  _addTwinkleStars(W) {
+    // 6 individual bright stars that pulse alpha — scrollFactor matches star layer
+    for (let i = 0; i < 6; i++) {
+      const s = this.add.graphics().setScrollFactor(0.05);
+      s.fillStyle(0xffffff, 0.9);
+      s.fillRect(0, 0, 2, 2);
+      s.x = 60 + Math.floor(Math.random() * (W - 120));
+      s.y = 20 + Math.floor(Math.random() * 300);
+      this.tweens.add({
+        targets: s,
+        alpha: 0.1,
+        duration: 1500 + Math.random() * 1500,
+        delay: Math.random() * 2000,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.InOut',
+      });
+    }
+  }
+
+  _addBioPulse(W) {
+    // One glowing specimen jar that slowly pulses (lab level 3)
+    const jar = this.add.graphics().setScrollFactor(1.0);
+    jar.fillStyle(0x4ade80, 0.2);
+    jar.fillCircle(0, 0, 10);
+    jar.fillStyle(0x86efac, 0.55);
+    jar.fillCircle(0, 0, 5);
+    jar.x = 300; jar.y = 524;
+    this.tweens.add({
+      targets: jar,
+      alpha: 0.3,
+      scaleX: 1.2, scaleY: 1.2,
+      duration: 2000,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.InOut',
+    });
+  }
+
+  _addGravityRingPulse(W) {
+    // Gravity rings that expand/contract — space station level 6
+    [500, 1050, 1600, 2300].forEach((gx, i) => {
+      const ring = this.add.graphics().setScrollFactor(1.0);
+      ring.lineStyle(1, 0x7c3aed, 0.3);
+      ring.strokeEllipse(0, 0, 70, 14);
+      ring.x = gx; ring.y = 552;
+      this.tweens.add({
+        targets: ring,
+        scaleX: 1.15,
+        alpha: 0.4,
+        duration: 1800 + i * 300,
+        delay: i * 400,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.InOut',
+      });
+    });
   }
 
   _drawStars(g, W, rng) {
-    // Sky base
+    // Sky gradient — dark at top, slightly lighter at horizon
+    g.fillStyle(0x020810, 1);
+    g.fillRect(0, 0, W, 200);
+    g.fillStyle(0x040c18, 1);
+    g.fillRect(0, 200, W, 150);
     g.fillStyle(0x060d17, 1);
-    g.fillRect(0, 0, W, 545);
+    g.fillRect(0, 350, W, 195);
 
-    // Stars — small bright dots
-    for (let i = 0; i < 220; i++) {
-      const x = Phaser.Math.Between(0, W);
-      const y = Phaser.Math.Between(0, 420);
-      const sz = rng() > 0.85 ? 2 : 1;
-      const blue = rng() > 0.6;
-      g.fillStyle(blue ? 0x93c5fd : 0xffffff, Phaser.Math.FloatBetween(0.2, 1));
+    // Stars — dense field with varied sizes
+    for (let i = 0; i < 400; i++) {
+      const x = rng() * W;
+      const y = rng() * 500;
+      const r = rng();
+      const sz = r > 0.92 ? 3 : r > 0.75 ? 2 : 1;
+      const blue = rng() > 0.55;
+      const alpha = 0.15 + rng() * 0.85;
+      g.fillStyle(blue ? 0x93c5fd : 0xffffff, alpha);
       g.fillRect(x, y, sz, sz);
     }
 
-    // Alien planet (ZZS homeworld hint)
-    g.fillStyle(0x1e3a5f, 1); g.fillCircle(700, 95, 46);
-    g.fillStyle(0x2d4f75, 1); g.fillCircle(700, 95, 38);
-    g.fillStyle(0x1e3a5f, 1); g.fillRect(654, 83, 92, 10); // ring band
-    g.fillStyle(0x38bdf8, 0.06); g.fillCircle(700, 95, 82); // glow halo
+    // Bright accent stars with glow halos
+    for (let i = 0; i < 8; i++) {
+      const sx = rng() * W;
+      const sy = rng() * 350;
+      g.fillStyle(0xffffff, 0.04);
+      g.fillCircle(sx, sy, 8);
+      g.fillStyle(0xffffff, 0.9);
+      g.fillRect(sx - 1, sy - 1, 3, 3);
+    }
 
-    // Distant nebula smear
-    for (let i = 0; i < 3; i++) {
-      const nx = Phaser.Math.Between(200, W - 200);
-      const ny = Phaser.Math.Between(40, 180);
-      g.fillStyle(0x312e81, 0.07);
-      g.fillEllipse(nx, ny, 220, 60);
+    // Alien planet with craters and ring
+    const px = 700, py = 95;
+    g.fillStyle(0x38bdf8, 0.03); g.fillCircle(px, py, 90);   // far glow
+    g.fillStyle(0x1e3a5f, 1);    g.fillCircle(px, py, 46);   // body
+    g.fillStyle(0x2d4f75, 1);    g.fillCircle(px, py, 38);   // bright face
+    g.fillStyle(0x1e3a5f, 0.6);  g.fillCircle(px - 12, py - 8, 8);  // crater
+    g.fillStyle(0x1e3a5f, 0.4);  g.fillCircle(px + 10, py + 12, 5); // crater
+    // Ring
+    g.lineStyle(3, 0x38bdf8, 0.15);
+    g.strokeEllipse(px, py, 130, 20);
+    g.lineStyle(1, 0x93c5fd, 0.25);
+    g.strokeEllipse(px, py, 120, 16);
+
+    // Nebula wisps — multiple with color variation
+    const nebColors = [0x312e81, 0x1e1b4b, 0x3730a3, 0x1d4ed8];
+    for (let i = 0; i < 6; i++) {
+      const nx = rng() * W;
+      const ny = 30 + rng() * 280;
+      const nc = nebColors[Math.floor(rng() * nebColors.length)];
+      g.fillStyle(nc, 0.04 + rng() * 0.05);
+      g.fillEllipse(nx, ny, 150 + rng() * 200, 40 + rng() * 50);
+    }
+
+    // Shooting star traces
+    for (let i = 0; i < 2; i++) {
+      const sx = rng() * W * 0.8;
+      const sy = rng() * 200;
+      g.lineStyle(1, 0xffffff, 0.15);
+      g.lineBetween(sx, sy, sx + 40 + rng() * 30, sy + 15 + rng() * 10);
     }
   }
 
   _drawCityFar(g, W, rng) {
-    // Very dark distant silhouettes
+    // Atmospheric haze at horizon
+    g.fillStyle(0x0a1628, 0.3);
+    g.fillRect(0, 460, W, 90);
+
+    // Dark distant silhouettes
     let x = 0;
     while (x < W) {
-      const bw = Phaser.Math.Between(42, 88);
-      const bh = Phaser.Math.Between(80, 210);
+      const bw = 42 + Math.floor(rng() * 46);
+      const bh = 80 + Math.floor(rng() * 130);
       const by = 540 - bh;
       g.fillStyle(0x0a1a2e, 1);
       g.fillRect(x, by, bw, bh);
 
-      // Window grid
+      // Rooftop edge highlight
+      g.fillStyle(0x1e3a5f, 0.3);
+      g.fillRect(x, by, bw, 2);
+
+      // Window grid — warm/cool mix
       for (let wy = by + 8; wy < 534; wy += 13) {
         for (let wx = x + 4; wx < x + bw - 4; wx += 10) {
           if (rng() > 0.44) {
-            g.fillStyle(0x1e4d7a, Phaser.Math.FloatBetween(0.3, 0.85));
+            const warm = rng() > 0.6;
+            g.fillStyle(warm ? 0xfbbf24 : 0x1e4d7a, 0.2 + rng() * 0.5);
             g.fillRect(wx, wy, 4, 7);
           }
         }
       }
 
-      // Antenna spire
+      // Antenna spire with blinking light
       if (rng() > 0.45) {
         g.fillStyle(0x152840, 1);
         g.fillRect(x + Math.floor(bw / 2) - 1, by - 20, 2, 20);
         g.fillStyle(0xef4444, 0.7);
         g.fillRect(x + Math.floor(bw / 2) - 2, by - 22, 4, 4);
+        // Red glow
+        g.fillStyle(0xef4444, 0.06);
+        g.fillCircle(x + Math.floor(bw / 2), by - 20, 8);
       }
 
-      x += bw + Phaser.Math.Between(3, 22);
+      x += bw + 3 + Math.floor(rng() * 20);
     }
   }
 
@@ -282,558 +506,469 @@ export default class GameScene extends Phaser.Scene {
     const NEONS = [0xf59e0b, 0x38bdf8, 0xa855f7, 0xef4444, 0x4ade80];
     let x = 0;
     while (x < W) {
-      const bw = Phaser.Math.Between(52, 112);
-      const bh = Phaser.Math.Between(50, 148);
+      const bw = 52 + Math.floor(rng() * 60);
+      const bh = 50 + Math.floor(rng() * 98);
       const by = 540 - bh;
       const accent = NEONS[Math.floor(rng() * NEONS.length)];
 
+      // Building body
       g.fillStyle(0x0d1f35, 1);
       g.fillRect(x, by, bw, bh);
 
-      // Neon outline
-      g.lineStyle(1, accent, 0.35);
-      g.strokeRect(x + 1, by + 1, bw - 2, bh - 2);
+      // Side edge glow
+      g.fillStyle(accent, 0.08);
+      g.fillRect(x, by, 2, bh);
+      g.fillRect(x + bw - 2, by, 2, bh);
 
-      // Neon sign strip at roof
-      g.fillStyle(accent, 0.55);
-      g.fillRect(x + 4, by + 4, bw - 8, 5);
+      // Neon roof line
+      g.fillStyle(accent, 0.6);
+      g.fillRect(x, by, bw, 2);
+      // Roof glow bleed
+      g.fillStyle(accent, 0.04);
+      g.fillRect(x - 4, by - 6, bw + 8, 8);
 
-      // Windows (larger)
-      for (let wy = by + 16; wy < 528; wy += 18) {
+      // Neon sign strip below roof
+      g.fillStyle(accent, 0.45);
+      g.fillRect(x + 4, by + 6, bw - 8, 5);
+
+      // Windows with frames
+      for (let wy = by + 18; wy < 528; wy += 18) {
         for (let wx = x + 6; wx < x + bw - 6; wx += 14) {
           if (rng() > 0.38) {
-            g.fillStyle(rng() > 0.65 ? accent : 0xfbbf24,
-              Phaser.Math.FloatBetween(0.25, 0.65));
+            const warm = rng() > 0.6;
+            const wc = warm ? 0xfbbf24 : accent;
+            // Window frame
+            g.fillStyle(0x1e3a5f, 0.6);
+            g.fillRect(wx - 1, wy - 1, 9, 12);
+            // Window light
+            g.fillStyle(wc, 0.2 + rng() * 0.45);
             g.fillRect(wx, wy, 7, 10);
           }
         }
       }
 
-      // Billboard rectangle on some buildings
-      if (rng() > 0.7) {
-        g.fillStyle(accent, 0.18);
-        g.fillRect(x + 6, by + 10, bw - 12, 22);
+      // Billboard on some buildings
+      if (rng() > 0.65) {
+        g.fillStyle(accent, 0.15);
+        g.fillRect(x + 6, by + 12, bw - 12, 22);
         g.lineStyle(1, accent, 0.5);
-        g.strokeRect(x + 6, by + 10, bw - 12, 22);
+        g.strokeRect(x + 6, by + 12, bw - 12, 22);
+        // Scanlines on billboard
+        for (let sy = by + 14; sy < by + 32; sy += 3) {
+          g.fillStyle(accent, 0.06);
+          g.fillRect(x + 7, sy, bw - 14, 1);
+        }
       }
 
-      x += bw + Phaser.Math.Between(6, 32);
+      // Ground-level light pool from building
+      g.fillStyle(accent, 0.03);
+      g.fillEllipse(x + bw / 2, 548, bw + 10, 16);
+
+      x += bw + 6 + Math.floor(rng() * 26);
     }
   }
 
   _drawLevel1Props(W, rng) {
-    // Crashed spaceship wreckage — near player spawn
+    // Crashed spaceship wreckage — ethereal holographic overlay
     const wreck = this.add.graphics();
-    wreck.fillStyle(0x1e293b, 1); wreck.fillRect(0, 0, 100, 35);
-    wreck.fillStyle(0x334155, 1); wreck.fillRect(15, -18, 65, 18);
-    wreck.fillStyle(0x0f172a, 1); wreck.fillRect(20, 4, 14, 14); // porthole
-    wreck.fillStyle(0xef4444, 0.5); wreck.fillRect(0, 32, 100, 6);  // scorch
-    wreck.fillStyle(0xf97316, 0.3); wreck.fillRect(10, 38, 80, 4);
+    wreck.fillStyle(0x1e293b, 0.5); wreck.fillRect(0, 0, 100, 35);
+    wreck.fillStyle(0x334155, 0.4); wreck.fillRect(15, -18, 65, 18);
+    wreck.fillStyle(0x0f172a, 0.3); wreck.fillRect(20, 4, 14, 14);
+    wreck.fillStyle(0xef4444, 0.2); wreck.fillRect(0, 32, 100, 6);
+    wreck.fillStyle(0xf97316, 0.1); wreck.fillRect(10, 38, 80, 4);
+    // Glow halo
+    wreck.fillStyle(0xf97316, 0.04); wreck.fillEllipse(50, 20, 140, 60);
     wreck.x = 145; wreck.y = 517;
 
-    // Street lamps along the path
+    // Street lamps — holographic glow pools
     [480, 870, 1180, 1650, 2150, 2300].forEach(lx => {
       const lamp = this.add.graphics();
-      lamp.fillStyle(0x334155, 1);
+      lamp.fillStyle(0x334155, 0.4);
       lamp.fillRect(-3, -64, 6, 64);
       lamp.fillRect(-12, -72, 24, 8);
-      lamp.fillStyle(0xfbbf24, 0.9);
+      lamp.fillStyle(0xfbbf24, 0.5);
       lamp.fillRect(-8, -72, 16, 6);
-      lamp.fillStyle(0xfbbf24, 0.05);
-      lamp.fillEllipse(0, -40, 70, 50); // light pool
+      // Layered glow pool
+      lamp.fillStyle(0xfbbf24, 0.02);
+      lamp.fillEllipse(0, -20, 90, 80);
+      lamp.fillStyle(0xfbbf24, 0.04);
+      lamp.fillEllipse(0, -40, 60, 50);
       lamp.x = lx; lamp.y = 552;
     });
 
-    // Hologram projectors near each NPC
+    // Hologram projectors — brighter scan beam
     [320, 1000, 1900].forEach(hx => {
       const holo = this.add.graphics();
-      holo.fillStyle(0x1e3a5f, 1); holo.fillRect(-6, -14, 12, 14);
-      holo.fillStyle(0x38bdf8, 0.18); holo.fillTriangle(-18, -14, 18, -14, 0, -46);
-      holo.lineStyle(1, 0x38bdf8, 0.4); holo.strokeTriangle(-18, -14, 18, -14, 0, -46);
+      holo.fillStyle(0x1e3a5f, 0.5); holo.fillRect(-6, -14, 12, 14);
+      holo.fillStyle(0x38bdf8, 0.1); holo.fillTriangle(-18, -14, 18, -14, 0, -46);
+      holo.lineStyle(1, 0x38bdf8, 0.25); holo.strokeTriangle(-18, -14, 18, -14, 0, -46);
+      // Scanlines inside beam
+      for (let sy = -40; sy < -14; sy += 4) {
+        holo.fillStyle(0x38bdf8, 0.06);
+        holo.fillRect(-12, sy, 24, 1);
+      }
       holo.x = hx; holo.y = 552;
     });
 
-    // Ground floor neon strip accent
+    // Ground neon accent — subtle
     const strip = this.add.graphics();
-    strip.lineStyle(2, 0x38bdf8, 0.12);
+    strip.lineStyle(1, 0xf59e0b, 0.08);
     strip.lineBetween(0, 553, W, 553);
   }
 
   _drawLevel2Props(W, rng) {
-    // Server racks along the floor
+    // Server racks — holographic outlines
     [200, 500, 800, 1200, 1600, 2000, 2400].forEach(rx => {
       const rack = this.add.graphics();
-      rack.fillStyle(0x0f1e30, 1); rack.fillRect(-14, -64, 28, 64);
-      rack.lineStyle(1, 0x1e3a5f, 1); rack.strokeRect(-14, -64, 28, 64);
-      // Drive bays
+      rack.fillStyle(0x0f1e30, 0.4); rack.fillRect(-14, -64, 28, 64);
+      rack.lineStyle(1, 0x1e3a5f, 0.4); rack.strokeRect(-14, -64, 28, 64);
       for (let row = 0; row < 5; row++) {
         const lit = rng() > 0.4;
-        rack.fillStyle(lit ? 0x06b6d4 : 0x1e3a5f, lit ? 0.8 : 0.3);
+        rack.fillStyle(lit ? 0x06b6d4 : 0x1e3a5f, lit ? 0.35 : 0.15);
         rack.fillRect(-10, -58 + row * 11, 20, 7);
       }
-      // Status light
-      rack.fillStyle(rng() > 0.2 ? 0x4ade80 : 0xef4444, 1);
+      // Status LED with glow
+      const green = rng() > 0.2;
+      rack.fillStyle(green ? 0x4ade80 : 0xef4444, 0.8);
       rack.fillRect(6, -62, 4, 4);
+      rack.fillStyle(green ? 0x4ade80 : 0xef4444, 0.04);
+      rack.fillCircle(8, -60, 10);
       rack.x = rx; rack.y = 552;
     });
 
-    // Overhead data cables (horizontal runs)
-    const cable = this.add.graphics();
-    cable.lineStyle(2, 0x0e7490, 0.25);
-    for (let y = 480; y <= 510; y += 10) {
-      cable.lineBetween(0, y, W, y);
-    }
-
-    // Holographic terminal screens above platforms
+    // Holographic terminal screens — with scanlines
     [[700, 422], [1450, 382], [2150, 422]].forEach(([hx, hy]) => {
       const screen = this.add.graphics();
-      screen.fillStyle(0x06b6d4, 0.08); screen.fillRect(-36, -44, 72, 40);
-      screen.lineStyle(1, 0x06b6d4, 0.4); screen.strokeRect(-36, -44, 72, 40);
-      // Scan lines
-      for (let l = 0; l < 4; l++) {
-        screen.lineStyle(1, 0x06b6d4, 0.15);
-        screen.lineBetween(-32, -38 + l * 8, 32, -38 + l * 8);
+      screen.fillStyle(0x06b6d4, 0.05); screen.fillRect(-36, -44, 72, 40);
+      screen.lineStyle(1, 0x06b6d4, 0.3); screen.strokeRect(-36, -44, 72, 40);
+      for (let l = 0; l < 8; l++) {
+        screen.fillStyle(0x06b6d4, 0.04);
+        screen.fillRect(-34, -42 + l * 5, 68, 1);
       }
+      // Glow halo behind screen
+      screen.fillStyle(0x06b6d4, 0.02);
+      screen.fillEllipse(0, -24, 90, 60);
       screen.x = hx; screen.y = hy;
     });
 
-    // Amber warning strip on floor
+    // Ambient cyan floor accent
     const strip = this.add.graphics();
-    strip.lineStyle(2, 0xf59e0b, 0.1);
+    strip.lineStyle(1, 0x06b6d4, 0.06);
     strip.lineBetween(0, 553, W, 553);
-
-    // Ceiling conduit
-    const conduit = this.add.graphics();
-    conduit.lineStyle(3, 0x1e3a5f, 0.5);
-    conduit.lineBetween(0, 2, W, 2);
-    conduit.fillStyle(0x06b6d4, 0.06);
-    conduit.fillRect(0, 0, W, 5);
   }
 
   _drawLevel5Props(W, rng) {
-    // Deep space — nebula patches
-    const nebula = this.add.graphics();
-    [[400,300,180,0x3730a3],[1200,200,140,0x1e1b4b],[2000,350,160,0x312e81],[2800,250,130,0x1d4ed8]].forEach(([nx,ny,r,c]) => {
-      nebula.fillStyle(c, 0.05);
-      nebula.fillEllipse(nx, ny, r * 2.4, r);
-    });
-
-    // Large planets in background
-    [[320, 180, 48, 0x7c3aed],[1600, 140, 36, 0x1e40af],[2700, 200, 55, 0x065f46]].forEach(([px,py,pr,pc]) => {
-      const g = this.add.graphics();
-      g.fillStyle(pc, 0.22);
-      g.fillCircle(px, py, pr);
-      g.lineStyle(1, pc, 0.18);
-      g.strokeCircle(px, py, pr);
-      // Ring
-      g.lineStyle(2, pc, 0.12);
-      g.strokeEllipse(px, py, pr * 3.2, pr * 0.6);
-    });
-
-    // Census terminal stations along floor
+    // Census terminal stations — holographic kiosks
     [250, 700, 1150, 1600, 2050, 2500, 2950].forEach(tx => {
       const term = this.add.graphics();
-      term.fillStyle(0x0c1445, 1); term.fillRect(-16, -56, 32, 56);
-      term.lineStyle(1, 0x3730a3, 0.5); term.strokeRect(-16, -56, 32, 56);
+      term.fillStyle(0x0c1445, 0.35); term.fillRect(-16, -56, 32, 56);
+      term.lineStyle(1, 0x3730a3, 0.3); term.strokeRect(-16, -56, 32, 56);
       // Screen glow
-      term.fillStyle(0x60a5fa, 0.12); term.fillRect(-12, -50, 24, 24);
-      term.lineStyle(1, 0x60a5fa, 0.3); term.strokeRect(-12, -50, 24, 24);
-      // Data lines on screen
-      for (let l = 0; l < 3; l++) {
-        term.fillStyle(0x60a5fa, 0.2); term.fillRect(-10, -44 + l * 7, 14 + l * 4, 3);
+      term.fillStyle(0x60a5fa, 0.08); term.fillRect(-12, -50, 24, 24);
+      term.lineStyle(1, 0x60a5fa, 0.2); term.strokeRect(-12, -50, 24, 24);
+      // Scanlines on screen
+      for (let l = 0; l < 5; l++) {
+        term.fillStyle(0x60a5fa, 0.05);
+        term.fillRect(-12, -48 + l * 5, 24, 1);
       }
+      // Glow halo
+      term.fillStyle(0x60a5fa, 0.02);
+      term.fillEllipse(0, -38, 50, 40);
       term.x = tx; term.y = 552;
     });
 
-    // Starfield dust (tiny dots at ground level)
-    const dust = this.add.graphics();
-    for (let i = 0; i < 60; i++) {
-      const dx = (i * 137.5) % W;
-      const dy = 520 + (i % 4) * 8;
-      dust.fillStyle(0x60a5fa, 0.08 + (i % 3) * 0.06);
-      dust.fillCircle(dx, dy, 1 + (i % 2));
-    }
-
-    // Census data beams (vertical scan lines)
+    // Vertical scan beams — very subtle
     const beam = this.add.graphics();
     [500, 1100, 1800, 2400].forEach(bx => {
-      beam.lineStyle(1, 0x3730a3, 0.1);
+      beam.lineStyle(1, 0x3730a3, 0.05);
       beam.lineBetween(bx, 0, bx, 560);
     });
 
-    // Highlighted census arch above Platform D (featured)
+    // Census arch above Platform D
     const arch = this.add.graphics();
-    arch.lineStyle(2, 0x60a5fa, 0.4);
+    arch.lineStyle(2, 0x60a5fa, 0.25);
     arch.strokeRect(2554, 308, 92, 54);
-    arch.fillStyle(0x60a5fa, 0.04);
+    arch.fillStyle(0x60a5fa, 0.03);
     arch.fillRect(2554, 308, 92, 54);
-    // Orbital ring above
-    arch.lineStyle(1, 0x60a5fa, 0.2);
+    arch.lineStyle(1, 0x60a5fa, 0.12);
     arch.strokeEllipse(2600, 295, 120, 30);
   }
 
   _drawLevel4Props(W, rng) {
-    // Train tracks along the floor (two parallel rails)
+    // Train tracks — subtle rail glow
     const track = this.add.graphics();
-    track.lineStyle(3, 0x334155, 0.7);
+    track.lineStyle(2, 0x334155, 0.3);
     track.lineBetween(0, 546, W, 546);
     track.lineBetween(0, 554, W, 554);
-    // Sleepers (cross-ties)
-    for (let x = 0; x < W; x += 32) {
-      track.lineStyle(4, 0x1e293b, 0.9);
-      track.lineBetween(x, 543, x, 557);
-    }
+    // Energy between rails
+    track.fillStyle(0xa855f7, 0.03);
+    track.fillRect(0, 546, W, 8);
 
-    // Platform edge strips at each station marker
+    // Platform edge strips — neon markers
     [350, 800, 1300, 1750, 2250].forEach(px => {
       const plat = this.add.graphics();
-      plat.fillStyle(0xa855f7, 0.08);
+      plat.fillStyle(0xa855f7, 0.05);
       plat.fillRect(-48, -8, 96, 8);
-      plat.lineStyle(1, 0xa855f7, 0.3);
+      plat.lineStyle(1, 0xa855f7, 0.2);
       plat.strokeRect(-48, -8, 96, 8);
+      // Glow bleed
+      plat.fillStyle(0xa855f7, 0.02);
+      plat.fillEllipse(0, -4, 110, 20);
       plat.x = px; plat.y = 552;
     });
 
-    // Route map boards above platforms
+    // Route map boards — holographic panels with scanlines
     [[700, 422], [1450, 382], [2100, 422]].forEach(([mx, my]) => {
       const board = this.add.graphics();
-      board.fillStyle(0x1a0d3d, 1);
+      board.fillStyle(0x1a0d3d, 0.4);
       board.fillRect(-42, -34, 84, 30);
-      board.lineStyle(1, 0xa855f7, 0.4);
+      board.lineStyle(1, 0xa855f7, 0.25);
       board.strokeRect(-42, -34, 84, 30);
-      // Dot-matrix style route lines
-      for (let l = 0; l < 3; l++) {
-        board.fillStyle(0xa855f7, 0.25 + l * 0.15);
-        board.fillRect(-36, -28 + l * 8, 40 + l * 8, 4);
+      for (let l = 0; l < 6; l++) {
+        board.fillStyle(0xa855f7, 0.04);
+        board.fillRect(-40, -32 + l * 5, 80, 1);
       }
+      // Glow halo
+      board.fillStyle(0xa855f7, 0.02);
+      board.fillEllipse(0, -19, 100, 50);
       board.x = mx; board.y = my;
     });
 
-    // Overhead power lines
-    const wire = this.add.graphics();
-    wire.lineStyle(1, 0xa855f7, 0.12);
-    wire.lineBetween(0, 8, W, 8);
-    wire.lineStyle(1, 0x7c3aed, 0.08);
-    wire.lineBetween(0, 16, W, 16);
-
-    // Departure sign pillars
+    // Departure sign pillars — ghostly
     [250, 750, 1200, 1700, 2300].forEach(px => {
       const pillar = this.add.graphics();
-      pillar.fillStyle(0x1a0d3d, 1);
+      pillar.fillStyle(0x1a0d3d, 0.3);
       pillar.fillRect(-3, -80, 6, 80);
-      pillar.fillStyle(0x2d1d6b, 1);
+      pillar.fillStyle(0x2d1d6b, 0.35);
       pillar.fillRect(-20, -88, 40, 22);
-      pillar.lineStyle(1, 0xa855f7, 0.35);
+      pillar.lineStyle(1, 0xa855f7, 0.2);
       pillar.strokeRect(-20, -88, 40, 22);
       pillar.x = px; pillar.y = 552;
     });
   }
 
   _drawLevel3Props(W, rng) {
-    // Bio-hazard floor stripe
-    const stripe = this.add.graphics();
-    for (let x = 0; x < W; x += 40) {
-      stripe.fillStyle(0x22c55e, 0.06);
-      stripe.fillRect(x, 548, 20, 8);
-    }
-
-    // Lab bench counters along the floor
+    // Lab bench counters — holographic
     [300, 650, 1050, 1550, 1900, 2300].forEach(bx => {
       const bench = this.add.graphics();
-      bench.fillStyle(0x0c2a10, 1);
+      bench.fillStyle(0x0c2a10, 0.35);
       bench.fillRect(-40, -20, 80, 20);
-      bench.lineStyle(1, 0x22c55e, 0.4);
+      bench.lineStyle(1, 0x22c55e, 0.2);
       bench.strokeRect(-40, -20, 80, 20);
-      // Petri dishes / containers
+      // Specimen jars — glowing circles
       for (let d = 0; d < 3; d++) {
-        bench.fillStyle(0x4ade80, 0.15 + d * 0.08);
-        bench.fillCircle(-22 + d * 22, -28, 8);
-        bench.lineStyle(1, 0x22c55e, 0.4);
-        bench.strokeCircle(-22 + d * 22, -28, 8);
+        bench.fillStyle(0x4ade80, 0.08);
+        bench.fillCircle(-22 + d * 22, -28, 12); // outer glow
+        bench.fillStyle(0x4ade80, 0.15);
+        bench.fillCircle(-22 + d * 22, -28, 6);
+        bench.lineStyle(1, 0x22c55e, 0.2);
+        bench.strokeCircle(-22 + d * 22, -28, 6);
       }
       bench.x = bx; bench.y = 552;
     });
 
-    // DNA helix wall decorations
+    // DNA helix — ethereal floating
     [150, 550, 1000, 1400, 1800, 2250].forEach(hx => {
       const helix = this.add.graphics();
       for (let y = 0; y < 6; y++) {
         const wave = Math.sin(y * 1.2) * 8;
-        helix.fillStyle(0x22c55e, 0.2 + (y % 2) * 0.15);
-        helix.fillCircle(wave, y * 14, 4);
-        helix.fillStyle(0x4ade80, 0.15);
-        helix.fillCircle(-wave, y * 14, 4);
+        helix.fillStyle(0x22c55e, 0.12 + (y % 2) * 0.08);
+        helix.fillCircle(wave, y * 14, 3);
+        helix.fillStyle(0x4ade80, 0.08);
+        helix.fillCircle(-wave, y * 14, 3);
         if (y < 5) {
-          helix.lineStyle(1, 0x22c55e, 0.15);
+          helix.lineStyle(1, 0x22c55e, 0.08);
           helix.lineBetween(wave, y * 14, -wave, (y + 1) * 14);
         }
       }
+      // Glow halo
+      helix.fillStyle(0x22c55e, 0.02);
+      helix.fillEllipse(0, 40, 40, 100);
       helix.x = hx; helix.y = 460;
     });
 
-    // Ceiling scan beams (green horizontal lines)
-    const beams = this.add.graphics();
-    beams.lineStyle(1, 0x22c55e, 0.08);
-    for (let y = 0; y < 5; y++) {
-      beams.lineBetween(0, 15 + y * 8, W, 15 + y * 8);
-    }
-
-    // Bio-scanner arch above Platform B (featured obstacle)
+    // Bio-scanner arch
     const arch = this.add.graphics();
-    arch.lineStyle(2, 0x22c55e, 0.45);
+    arch.lineStyle(2, 0x22c55e, 0.3);
     arch.strokeRect(1400, 330, 100, 52);
-    arch.lineStyle(1, 0x22c55e, 0.2);
-    arch.lineBetween(1400, 356, 1500, 356); // mid crossbar
-    arch.fillStyle(0x22c55e, 0.05);
+    arch.lineStyle(1, 0x22c55e, 0.12);
+    arch.lineBetween(1400, 356, 1500, 356);
+    arch.fillStyle(0x22c55e, 0.03);
     arch.fillRect(1400, 330, 100, 52);
   }
 
   _drawLevel6Props(W, rng) {
-    // Deep-space hull floor strip
-    const hull = this.add.graphics();
-    for (let x = 0; x < W; x += 60) {
-      hull.fillStyle(0x2d1d6b, 0.12);
-      hull.fillRect(x, 548, 40, 8);
-    }
-
-    // Cargo containers stacked along the floor
+    // Cargo containers — holographic
     [180, 420, 820, 1200, 1700, 2200, 2480].forEach((cx, i) => {
       const cg = this.add.graphics();
       const colors = [0x1a0d3d, 0x0d1f35, 0x1a1a2e];
-      const col = colors[i % colors.length];
-      cg.fillStyle(col, 1);
+      cg.fillStyle(colors[i % 3], 0.35);
       cg.fillRect(-28, -46, 56, 46);
-      cg.lineStyle(1, 0x4c1d95, 0.5);
+      cg.lineStyle(1, 0x4c1d95, 0.25);
       cg.strokeRect(-28, -46, 56, 46);
       // Rivets
       [[-22, -38], [18, -38], [-22, -12], [18, -12]].forEach(([rx, ry]) => {
-        cg.fillStyle(0x7c3aed, 0.4);
+        cg.fillStyle(0x7c3aed, 0.2);
         cg.fillCircle(rx, ry, 2);
       });
-      // Colour stripe / label band
-      cg.fillStyle(0x7c3aed, 0.25);
+      // Label band
+      cg.fillStyle(0x7c3aed, 0.12);
       cg.fillRect(-28, -22, 56, 8);
       cg.x = cx; cg.y = 552;
     });
 
-    // Porthole windows along the top (showing stars outside)
-    [120, 400, 750, 1100, 1500, 1900, 2350].forEach(px => {
-      const port = this.add.graphics();
-      port.fillStyle(0x050b18, 1);
-      port.fillCircle(0, 0, 18);
-      port.lineStyle(3, 0x4c1d95, 0.8);
-      port.strokeCircle(0, 0, 18);
-      // Crosshair
-      port.lineStyle(1, 0x4c1d95, 0.3);
-      port.lineBetween(-18, 0, 18, 0);
-      port.lineBetween(0, -18, 0, 18);
-      // Star inside
-      port.fillStyle(0xffffff, 0.7);
-      port.fillRect(-2, -2, 2, 2);
-      port.fillStyle(0x93c5fd, 0.5);
-      port.fillRect(6, -8, 1, 1);
-      port.fillRect(-8, 5, 1, 1);
-      port.x = px; port.y = 40;
-    });
-
-    // Gravity ring generators (horizontal rings on the ground)
+    // Gravity ring generators — subtle glow
     [500, 1050, 1600, 2300].forEach(gx => {
       const ring = this.add.graphics();
-      ring.lineStyle(2, 0x7c3aed, 0.35);
+      ring.lineStyle(1, 0x7c3aed, 0.15);
       ring.strokeEllipse(0, 0, 70, 14);
-      ring.lineStyle(1, 0xa855f7, 0.15);
-      ring.strokeEllipse(0, 0, 90, 18);
+      ring.fillStyle(0x7c3aed, 0.02);
+      ring.fillEllipse(0, 0, 90, 18);
       ring.x = gx; ring.y = 552;
     });
 
-    // Medical bay panel above Platform A (heap priority)
+    // Medical bay panel — holographic with scanlines
     const medPanel = this.add.graphics();
-    medPanel.fillStyle(0x1a0d3d, 1);
+    medPanel.fillStyle(0x1a0d3d, 0.35);
     medPanel.fillRect(640, 340, 120, 60);
-    medPanel.lineStyle(1, 0xef4444, 0.4);
+    medPanel.lineStyle(1, 0xef4444, 0.25);
     medPanel.strokeRect(640, 340, 120, 60);
-    medPanel.lineStyle(1, 0xef4444, 0.2);
-    medPanel.lineBetween(640, 370, 760, 370);
-    // Red cross icon
-    medPanel.fillStyle(0xef4444, 0.5);
+    for (let sy = 342; sy < 398; sy += 4) {
+      medPanel.fillStyle(0xef4444, 0.03);
+      medPanel.fillRect(641, sy, 118, 1);
+    }
+    // Red cross
+    medPanel.fillStyle(0xef4444, 0.3);
     medPanel.fillRect(692, 346, 16, 6);
     medPanel.fillRect(697, 341, 6, 16);
+    medPanel.fillStyle(0xef4444, 0.02);
+    medPanel.fillEllipse(700, 370, 140, 80);
 
-    // Holographic cargo manifest display above Platform C (knapsack)
+    // Cargo manifest — holographic
     const manifest = this.add.graphics();
-    manifest.fillStyle(0x0d1f35, 1);
+    manifest.fillStyle(0x0d1f35, 0.35);
     manifest.fillRect(2040, 340, 120, 60);
-    manifest.lineStyle(1, 0x38bdf8, 0.4);
+    manifest.lineStyle(1, 0x38bdf8, 0.25);
     manifest.strokeRect(2040, 340, 120, 60);
-    // Data rows
     for (let r = 0; r < 3; r++) {
-      manifest.fillStyle(0x38bdf8, 0.15 + r * 0.07);
+      manifest.fillStyle(0x38bdf8, 0.08 + r * 0.03);
       manifest.fillRect(2048, 350 + r * 14, 60 + r * 8, 8);
     }
-    manifest.lineStyle(1, 0x38bdf8, 0.2);
-    manifest.lineBetween(2040, 374, 2160, 374);
 
-    // DP table arch above Platform B (change-making)
+    // DP arch — holographic
     const dpArch = this.add.graphics();
-    dpArch.lineStyle(2, 0xa855f7, 0.4);
+    dpArch.lineStyle(2, 0xa855f7, 0.25);
     dpArch.strokeRect(1390, 322, 120, 50);
-    dpArch.lineStyle(1, 0xa855f7, 0.18);
-    dpArch.lineBetween(1390, 347, 1510, 347);
-    dpArch.fillStyle(0xa855f7, 0.05);
+    dpArch.fillStyle(0xa855f7, 0.03);
     dpArch.fillRect(1390, 322, 120, 50);
-
-    // Ceiling conduit cables
-    const conduit = this.add.graphics();
-    conduit.lineStyle(1, 0x4c1d95, 0.2);
-    conduit.lineBetween(0, 8, W, 8);
-    conduit.lineStyle(1, 0x7c3aed, 0.1);
-    conduit.lineBetween(0, 18, W, 18);
   }
 
   _drawLevel7Props(W, rng) {
-    // Launchpad floor markings (dashed yellow lines)
-    const markings = this.add.graphics();
-    for (let x = 0; x < W; x += 50) {
-      markings.fillStyle(0xf59e0b, 0.12);
-      markings.fillRect(x, 548, 28, 8);
-    }
-
-    // Communication towers
+    // Communication towers — holographic lattice
     [280, 680, 1100, 1680, 2280].forEach(tx => {
       const tower = this.add.graphics();
-      // Stem
-      tower.fillStyle(0x0f2038, 1);
+      tower.fillStyle(0x0f2038, 0.35);
       tower.fillRect(-4, -120, 8, 120);
-      // Crossbeam
-      tower.fillStyle(0x1e3a5f, 1);
+      tower.fillStyle(0x1e3a5f, 0.3);
       tower.fillRect(-22, -80, 44, 6);
-      // Dish
-      tower.fillStyle(0x1e3a5f, 1);
+      // Dish with glow
+      tower.fillStyle(0x1e3a5f, 0.3);
       tower.fillEllipse(0, -128, 28, 12);
-      tower.lineStyle(1, 0x38bdf8, 0.4);
+      tower.lineStyle(1, 0x38bdf8, 0.2);
       tower.strokeEllipse(0, -128, 28, 12);
-      // Antenna tip
-      tower.fillStyle(0xef4444, 0.8);
+      // Antenna tip + glow
+      tower.fillStyle(0xef4444, 0.5);
       tower.fillCircle(0, -134, 3);
+      tower.fillStyle(0xef4444, 0.04);
+      tower.fillCircle(0, -134, 12);
       tower.x = tx; tower.y = 552;
     });
 
-    // Fiber optic cables along floor
-    const cables = this.add.graphics();
-    cables.lineStyle(1, 0x38bdf8, 0.22);
-    cables.lineBetween(0, 548, W, 548);
-    cables.lineStyle(1, 0x60a5fa, 0.10);
-    cables.lineBetween(0, 553, W, 553);
-
-    // Server rack panels near ground
+    // Server rack panels — holographic
     [480, 980, 1580, 2080].forEach(rx => {
       const rack = this.add.graphics();
-      rack.fillStyle(0x0c1a2e, 1);
+      rack.fillStyle(0x0c1a2e, 0.3);
       rack.fillRect(-22, -48, 44, 48);
-      rack.lineStyle(1, 0x1e3a5f, 0.6);
+      rack.lineStyle(1, 0x1e3a5f, 0.25);
       rack.strokeRect(-22, -48, 44, 48);
       for (let r = 0; r < 4; r++) {
-        rack.fillStyle(0x38bdf8, 0.15 + r * 0.04);
+        rack.fillStyle(0x38bdf8, 0.08 + r * 0.02);
         rack.fillRect(-16, -42 + r * 10, 32, 6);
       }
       rack.x = rx; rack.y = 552;
     });
 
-    // MST arch above Platform A (x=700)
+    // MST arch — holographic
     const mstArch = this.add.graphics();
-    mstArch.lineStyle(2, 0x38bdf8, 0.4);
+    mstArch.lineStyle(2, 0x38bdf8, 0.25);
     mstArch.strokeRect(638, 336, 124, 58);
-    mstArch.lineStyle(1, 0x38bdf8, 0.15);
-    mstArch.lineBetween(638, 365, 762, 365);
-    mstArch.fillStyle(0x38bdf8, 0.04);
+    mstArch.fillStyle(0x38bdf8, 0.03);
     mstArch.fillRect(638, 336, 124, 58);
 
-    // Dijkstra arch above Platform B (x=1450)
+    // Dijkstra arch — holographic
     const djkArch = this.add.graphics();
-    djkArch.lineStyle(2, 0xf59e0b, 0.4);
+    djkArch.lineStyle(2, 0xf59e0b, 0.25);
     djkArch.strokeRect(1388, 296, 124, 58);
-    djkArch.lineStyle(1, 0xf59e0b, 0.15);
-    djkArch.lineBetween(1388, 325, 1512, 325);
-    djkArch.fillStyle(0xf59e0b, 0.04);
+    djkArch.fillStyle(0xf59e0b, 0.03);
     djkArch.fillRect(1388, 296, 124, 58);
-
-    // Ceiling network conduit
-    const conduit = this.add.graphics();
-    conduit.lineStyle(1, 0x1e3a5f, 0.25);
-    conduit.lineBetween(0, 6, W, 6);
-    conduit.lineStyle(1, 0x38bdf8, 0.08);
-    conduit.lineBetween(0, 16, W, 16);
   }
 
   _drawLevel8Props(W, rng) {
-    // Dense starfield (climactic finale)
-    const stars = this.add.graphics();
-    for (let i = 0; i < 350; i++) {
-      const sx = Phaser.Math.Between(0, W);
-      const sy = Phaser.Math.Between(0, 420);
-      const sz = rng() > 0.9 ? 2 : 1;
-      const blue = rng() > 0.5;
-      stars.fillStyle(blue ? 0x93c5fd : 0xffffff, Phaser.Math.FloatBetween(0.1, 0.9));
-      stars.fillRect(sx, sy, sz, sz);
-    }
-
-    // Holographic lock scanlines near start
-    const lockG = this.add.graphics();
-    for (let i = 0; i < 4; i++) {
-      lockG.lineStyle(1, 0xa855f7, 0.18 - i * 0.03);
-      lockG.lineBetween(0, 80 + i * 14, W, 80 + i * 14);
-    }
-
-    // Energy columns spaced across world
+    // Energy columns — very subtle vertical beams
     [400, 900, 1500, 2200, 2900].forEach(ex => {
       const eg = this.add.graphics();
-      eg.lineStyle(1, 0xa855f7, 0.15);
+      eg.lineStyle(1, 0xa855f7, 0.06);
       eg.lineBetween(ex, 0, ex, 552);
+      eg.fillStyle(0xa855f7, 0.01);
+      eg.fillRect(ex - 6, 0, 12, 552);
     });
 
-    // Chessboard hint tiles above Platform A (x=700, y=430)
+    // Chessboard hint tiles — holographic grid
     const chess = this.add.graphics();
     const cs = 16;
     for (let r = 0; r < 4; r++) {
       for (let c = 0; c < 4; c++) {
         const isLight = (r + c) % 2 === 0;
-        chess.fillStyle(isLight ? 0x1e293b : 0x0f172a, 0.5);
+        chess.fillStyle(isLight ? 0x1e293b : 0x0f172a, 0.25);
         chess.fillRect(636 + c * cs, 346 + r * cs, cs, cs);
-        chess.lineStyle(1, 0x334155, 0.3);
+        chess.lineStyle(1, 0x334155, 0.15);
         chess.strokeRect(636 + c * cs, 346 + r * cs, cs, cs);
       }
     }
 
-    // P / NP / NP-Complete door hint frames above Platform B (x=1400)
+    // P / NP / NP-Complete door frames — holographic
     const doorColors = [0x22c55e, 0xfbbf24, 0xef4444];
     doorColors.forEach((col, i) => {
       const dx = 1290 + i * 56;
       const dg = this.add.graphics();
-      dg.lineStyle(1, col, 0.3);
+      dg.lineStyle(1, col, 0.2);
       dg.strokeRect(dx, 306, 46, 60);
-      dg.fillStyle(col, 0.05);
+      dg.fillStyle(col, 0.03);
       dg.fillRect(dx, 306, 46, 60);
     });
 
-    // Launch pad glow circle near exit
+    // Launch pad glow — subtle ring
     const padG = this.add.graphics();
-    padG.lineStyle(2, 0x4ade80, 0.2);
+    padG.lineStyle(1, 0x4ade80, 0.12);
     padG.strokeEllipse(3200, 552, 220, 28);
-    padG.fillStyle(0x4ade80, 0.05);
+    padG.fillStyle(0x4ade80, 0.02);
     padG.fillEllipse(3200, 552, 220, 28);
 
-    // Ship silhouette hint near exit
+    // Ship silhouette — ethereal
     const shipG = this.add.graphics();
-    shipG.fillStyle(0x38bdf8, 0.10);
+    shipG.fillStyle(0x38bdf8, 0.05);
     shipG.fillTriangle(3200, 430, 3170, 500, 3230, 500);
-    shipG.lineStyle(1, 0x38bdf8, 0.2);
+    shipG.lineStyle(1, 0x38bdf8, 0.12);
     shipG.strokeTriangle(3200, 430, 3170, 500, 3230, 500);
+    // Glow
+    shipG.fillStyle(0x38bdf8, 0.02);
+    shipG.fillEllipse(3200, 470, 100, 80);
 
-    // Complexity archway above Platform B
+    // Complexity archway — holographic
     const compArch = this.add.graphics();
-    compArch.lineStyle(2, 0xa855f7, 0.35);
+    compArch.lineStyle(2, 0xa855f7, 0.2);
     compArch.strokeRect(1336, 296, 128, 58);
-    compArch.fillStyle(0xa855f7, 0.04);
+    compArch.fillStyle(0xa855f7, 0.02);
     compArch.fillRect(1336, 296, 128, 58);
   }
 
