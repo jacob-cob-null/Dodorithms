@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { applyCrt } from '../systems/CrtSystem.js';
 
 export default class MainMenuScene extends Phaser.Scene {
   constructor() {
@@ -7,6 +8,7 @@ export default class MainMenuScene extends Phaser.Scene {
 
   create() {
     const W = 800, H = 600;
+    applyCrt(this, { vignetteStrength: 0.2 });
 
     // Dark sky base
     this.add.rectangle(W / 2, H / 2, W, H, 0x060d17);

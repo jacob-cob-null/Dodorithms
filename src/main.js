@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import "./style.css";
+import { installCrtDomOverlay } from "./systems/CrtSystem.js";
 import BootScene        from "./scenes/BootScene.js";
 import MainMenuScene    from "./scenes/MainMenuScene.js";
 import GameScene        from "./scenes/GameScene.js";
@@ -31,6 +32,8 @@ import ServerRouting          from "./minigames/ServerRouting.js";
 import QueenGrid              from "./minigames/QueenGrid.js";
 import RouteOptimizer         from "./minigames/RouteOptimizer.js";
 import ComplexityGate         from "./minigames/ComplexityGate.js";
+
+installCrtDomOverlay();
 
 const config = {
   type: Phaser.AUTO,

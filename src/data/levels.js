@@ -29,7 +29,7 @@ export const LEVELS = [
       {
         // Ground — first thing Dodo sees
         id: 'l1-intro',
-        x: 380, y: 528,
+        x: 380, y: 516,
         objectType: 'npc',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -57,7 +57,7 @@ export const LEVELS = [
       {
         // Ground — after jumping back down
         id: 'l1-souvenirs',
-        x: 1050, y: 528,
+        x: 1050, y: 516,
         objectType: 'interactable',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -72,7 +72,7 @@ export const LEVELS = [
       {
         // ON Platform B (surface=470) — jump up again
         id: 'l1-smartphone',
-        x: 1300, y: 468,
+        x: 1300, y: 446,
         objectType: 'interactable',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -86,7 +86,7 @@ export const LEVELS = [
       {
         // ON Platform C (surface=475) — final climb before exit
         id: 'l1-prof-andrew',
-        x: 1980, y: 468,
+        x: 1980, y: 446,
         objectType: 'npc',
         texture: 'npc_professor',
         speaker: 'Prof. Andrew',

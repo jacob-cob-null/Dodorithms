@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import EventBus from '../systems/EventBus.js';
 import { EVENTS } from '../systems/events.js';
+import { applyCrt } from '../systems/CrtSystem.js';
 
 const FONT_MONO = { fontFamily: '"Courier New", Courier, monospace' };
 
@@ -35,6 +36,7 @@ export default class MinigameBase extends Phaser.Scene {
       status = 'ALGORITHM TRAINING MODULE',
     } = options;
 
+    applyCrt(this, { vignetteStrength: 0.1, contrast: 0.025, saturation: 0.025 });
     this.cameras.main.setBackgroundColor('#030712');
 
     const bg = this.add.graphics();

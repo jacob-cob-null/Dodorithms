@@ -3,6 +3,7 @@ import DialogueSystem from "../systems/DialogueSystem.js";
 import archiveSystem from "../systems/ArchiveSystem.js";
 import EventBus from "../systems/EventBus.js";
 import { EVENTS } from "../systems/events.js";
+import { applyCrt } from "../systems/CrtSystem.js";
 
 const FONT_MONO = { fontFamily: '"Courier New", Courier, monospace' };
 const COL_CYAN  = '#38bdf8';
@@ -16,6 +17,8 @@ export default class UIScene extends Phaser.Scene {
   }
 
   create() {
+    applyCrt(this, { vignetteStrength: 0.08, contrast: 0.025, saturation: 0.025 });
+
     this.dialogueSystem      = new DialogueSystem(this);
     this.puzzleOverlay       = null;
     this.unlockCard          = null;

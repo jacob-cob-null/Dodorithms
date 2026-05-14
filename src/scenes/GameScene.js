@@ -6,6 +6,7 @@ import InteractionSystem from "../systems/InteractionSystem.js";
 import EventBus from "../systems/EventBus.js";
 import { EVENTS } from "../systems/events.js";
 import archiveSystem from "../systems/ArchiveSystem.js";
+import { applyCrt } from "../systems/CrtSystem.js";
 import { LEVELS } from "../data/levels.js";
 
 const LEVEL_THEMES = {
@@ -26,6 +27,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
+    applyCrt(this, { vignetteStrength: 0.16 });
+
     const levelConfig = LEVELS[this.levelIndex];
 
     if (!levelConfig) {
@@ -51,11 +54,15 @@ export default class GameScene extends Phaser.Scene {
     const platTex = this.textures.exists(`platform_${theme}`) ? `platform_${theme}` : 'platform';
     this.platforms = this.physics.add.staticGroup();
     platforms.forEach(p => {
-      this.platforms.create(p.x, p.y, platTex).setScale(p.scaleX, p.scaleY).refreshBody();
+      this._drawPlatformGlow(p, theme);
+      this.platforms.create(p.x, p.y, platTex).setScale(p.scaleX, p.scaleY).setDepth(7).refreshBody();
     });
 
     // Player
     this.player = new Player(this, playerStart.x, playerStart.y);
+    this.player.setDepth(12);
+    this.playerShadow = this.add.ellipse(playerStart.x, playerStart.y + 31, 38, 8, 0x000000, 0.34)
+      .setDepth(8);
     this.physics.add.collider(this.player, this.platforms);
     this.playerController = new PlayerController(this, this.player);
 
@@ -115,6 +122,12 @@ export default class GameScene extends Phaser.Scene {
   buildObstacle(cfg) {
     const texture = this.textures.exists(cfg.texture) ? cfg.texture : 'npc';
     const isRealNpc = cfg.texture && cfg.texture.startsWith('npc_') && this.textures.exists(cfg.texture);
+    const isNpcSprite = cfg.texture && cfg.texture.startsWith('npc_');
+    const shadowW = isNpcSprite ? 38 : 26;
+    const shadowY = isNpcSprite ? cfg.y + 35 : cfg.y + 15;
+    const shadow = this.add.ellipse(cfg.x, shadowY, shadowW, 8, 0x000000, 0.34)
+      .setDepth(8);
+
     const sprite = new Interactable(this, cfg.x, cfg.y, texture, {
       id: cfg.id,
       onInteract: () => {
@@ -126,6 +139,8 @@ export default class GameScene extends Phaser.Scene {
         });
       },
     });
+    sprite.setDepth(12);
+    sprite.shadow = shadow;
 
     // Scale real NPC images down to game size
     if (isRealNpc) sprite.setDisplaySize(48, 72);
@@ -143,19 +158,66 @@ export default class GameScene extends Phaser.Scene {
     }
 
     // Name label above sprite
-    this.add.text(cfg.x, cfg.y - 34, cfg.speaker, {
-      fontFamily: 'sans-serif', fontSize: '11px', color: '#64748b',
-    }).setOrigin(0.5);
+    const labelY = isNpcSprite ? cfg.y - 52 : cfg.y - 30;
+    const label = this.add.text(cfg.x, labelY, cfg.speaker, {
+      fontFamily: 'monospace',
+      fontSize: '11px',
+      color: '#9fb3c8',
+      backgroundColor: 'rgba(2, 8, 16, 0.45)',
+      padding: { x: 4, y: 2 },
+    }).setOrigin(0.5).setDepth(14);
 
     // Interactable glow label
     if (cfg.objectType === 'interactable') {
-      this.add.text(cfg.x, cfg.y - 34, '[!]', {
-        fontFamily: 'sans-serif', fontSize: '13px', color: '#38bdf8',
-      }).setOrigin(0.5);
+      this.add.text(cfg.x, labelY - 18, '[!]', {
+        fontFamily: 'monospace', fontSize: '13px', color: '#38bdf8',
+      }).setOrigin(0.5).setDepth(14);
     }
 
     this.obstacleSprites.set(cfg.id, sprite);
     this.interactionSystem.register(sprite);
+  }
+
+  _drawPlatformGlow(p, theme) {
+    const ledColors = {
+      city: 0xf59e0b,
+      tech: 0x06b6d4,
+      lab: 0x22c55e,
+      train: 0xa855f7,
+      space: 0xa855f7,
+      network: 0x38bdf8,
+      academy: 0xfbbf24,
+    };
+    const led = ledColors[theme] || 0x38bdf8;
+    const w = 64 * p.scaleX;
+    const h = 16 * p.scaleY;
+    const x = p.x - w / 2;
+    const y = p.y - h / 2;
+
+    const g = this.add.graphics().setDepth(5);
+
+    // Pixel rim aura: layered rectangles instead of soft circles, so it keeps the pixel-art read.
+    g.fillStyle(led, 0.035);
+    g.fillRect(x - 8, y + h - 7, w + 16, 14);
+    g.fillStyle(led, 0.06);
+    g.fillRect(x - 4, y + h - 5, w + 8, 9);
+    g.fillStyle(led, 0.18);
+    g.fillRect(x, y + h - 3, w, 3);
+    g.fillStyle(0xffffff, 0.12);
+    g.fillRect(x + 4, y + h - 4, Math.max(16, w * 0.28), 1);
+
+    // Small pulsing endpoint LEDs make platforms feel powered without distracting.
+    [x + 8, x + w - 12].forEach((px, idx) => {
+      const dot = this.add.rectangle(px, y + h - 2, 4, 2, led, 0.8).setDepth(8);
+      this.tweens.add({
+        targets: dot,
+        alpha: 0.25,
+        duration: 950 + idx * 180,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.InOut',
+      });
+    });
   }
 
   handleObstacleComplete(cfg) {
@@ -271,6 +333,10 @@ export default class GameScene extends Phaser.Scene {
       const g = this.add.graphics().setScrollFactor(layer.scrollFactor);
       if (layer.type === 'stars') this._drawStars(g, worldWidth, rng);
     });
+
+    if (id === 'level1') {
+      this._drawLevel1Parallax(worldWidth, rng);
+    }
 
     // Wall band — anchored to bottom, tiles horizontally across world width
     const bgKey = `bg_${id}`;
@@ -568,52 +634,240 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  _drawLevel1Props(W, rng) {
-    // Crashed spaceship wreckage — ethereal holographic overlay
-    const wreck = this.add.graphics();
-    wreck.fillStyle(0x1e293b, 0.5); wreck.fillRect(0, 0, 100, 35);
-    wreck.fillStyle(0x334155, 0.4); wreck.fillRect(15, -18, 65, 18);
-    wreck.fillStyle(0x0f172a, 0.3); wreck.fillRect(20, 4, 14, 14);
-    wreck.fillStyle(0xef4444, 0.2); wreck.fillRect(0, 32, 100, 6);
-    wreck.fillStyle(0xf97316, 0.1); wreck.fillRect(10, 38, 80, 4);
-    // Glow halo
-    wreck.fillStyle(0xf97316, 0.04); wreck.fillEllipse(50, 20, 140, 60);
-    wreck.x = 145; wreck.y = 517;
+  _drawLevel1Parallax(W, rng) {
+    const sky = this.add.graphics().setScrollFactor(0.08).setDepth(-20);
+    const moonX = 1680;
+    const moonY = 92;
+    sky.fillStyle(0xf59e0b, 0.035); sky.fillCircle(moonX, moonY, 70);
+    sky.fillStyle(0x2b1a38, 0.9); sky.fillCircle(moonX, moonY, 34);
+    sky.fillStyle(0x4c2d5f, 0.9); sky.fillCircle(moonX - 5, moonY - 4, 27);
+    sky.fillStyle(0xf59e0b, 0.25); sky.fillRect(moonX - 16, moonY - 2, 22, 3);
+    sky.fillStyle(0x38bdf8, 0.16); sky.fillRect(moonX - 26, moonY + 8, 34, 2);
 
-    // Street lamps — holographic glow pools
-    [480, 870, 1180, 1650, 2150, 2300].forEach(lx => {
-      const lamp = this.add.graphics();
-      lamp.fillStyle(0x334155, 0.4);
-      lamp.fillRect(-3, -64, 6, 64);
-      lamp.fillRect(-12, -72, 24, 8);
-      lamp.fillStyle(0xfbbf24, 0.5);
-      lamp.fillRect(-8, -72, 16, 6);
-      // Layered glow pool
-      lamp.fillStyle(0xfbbf24, 0.02);
-      lamp.fillEllipse(0, -20, 90, 80);
-      lamp.fillStyle(0xfbbf24, 0.04);
-      lamp.fillEllipse(0, -40, 60, 50);
-      lamp.x = lx; lamp.y = 552;
-    });
-
-    // Hologram projectors — brighter scan beam
-    [320, 1000, 1900].forEach(hx => {
-      const holo = this.add.graphics();
-      holo.fillStyle(0x1e3a5f, 0.5); holo.fillRect(-6, -14, 12, 14);
-      holo.fillStyle(0x38bdf8, 0.1); holo.fillTriangle(-18, -14, 18, -14, 0, -46);
-      holo.lineStyle(1, 0x38bdf8, 0.25); holo.strokeTriangle(-18, -14, 18, -14, 0, -46);
-      // Scanlines inside beam
-      for (let sy = -40; sy < -14; sy += 4) {
-        holo.fillStyle(0x38bdf8, 0.06);
-        holo.fillRect(-12, sy, 24, 1);
+    for (let lane = 0; lane < 5; lane++) {
+      const y = 130 + lane * 38 + Math.floor(rng() * 14);
+      for (let x = 120 + lane * 70; x < W; x += 420 + Math.floor(rng() * 130)) {
+        sky.fillStyle(lane % 2 === 0 ? 0xf59e0b : 0x38bdf8, 0.18);
+        sky.fillRect(x, y, 44 + Math.floor(rng() * 30), 2);
+        sky.fillStyle(0xffffff, 0.28);
+        sky.fillRect(x + 2, y, 2, 2);
       }
-      holo.x = hx; holo.y = 552;
+    }
+
+    const far = this.add.graphics().setScrollFactor(0.22).setDepth(-15);
+    far.fillStyle(0x050b18, 0.72);
+    far.fillRect(0, 360, W, 190);
+    let x = -40;
+    while (x < W + 80) {
+      const bw = 38 + Math.floor(rng() * 56);
+      const bh = 78 + Math.floor(rng() * 150);
+      const top = 538 - bh;
+      far.fillStyle(0x071426, 0.92);
+      far.fillRect(x, top, bw, bh);
+      far.fillStyle(0x10233c, 0.75);
+      far.fillRect(x, top, bw, 2);
+      if (rng() > 0.45) {
+        far.fillStyle(0x1e3a5f, 0.42);
+        far.fillRect(x + Math.floor(bw / 2), top - 26, 2, 26);
+        far.fillStyle(0xef4444, 0.58);
+        far.fillRect(x + Math.floor(bw / 2) - 1, top - 29, 4, 3);
+      }
+      for (let wy = top + 9; wy < 530; wy += 15) {
+        for (let wx = x + 5; wx < x + bw - 5; wx += 12) {
+          if (rng() > 0.7) {
+            far.fillStyle(rng() > 0.5 ? 0xf59e0b : 0x38bdf8, 0.25);
+            far.fillRect(wx, wy, 4, 6);
+          }
+        }
+      }
+      x += bw + 8 + Math.floor(rng() * 18);
+    }
+
+    const mid = this.add.graphics().setScrollFactor(0.58).setDepth(-8);
+    for (let i = 0; i < 18; i++) {
+      const rx = Math.floor(rng() * W);
+      const ry = 230 + Math.floor(rng() * 260);
+      const len = 18 + Math.floor(rng() * 44);
+      mid.lineStyle(1, rng() > 0.5 ? 0x38bdf8 : 0xf59e0b, 0.08 + rng() * 0.07);
+      mid.lineBetween(rx, ry, rx - len, ry + Math.floor(len * 0.42));
+    }
+  }
+
+  _drawLevel1Props(W, rng) {
+    {
+    const road = this.add.graphics().setDepth(1);
+    road.fillStyle(0x0f172a, 0.58);
+    road.fillRect(0, 540, W, 28);
+    for (let x = 0; x < W; x += 64) {
+      this._drawLevel1MetalPanel(road, x, 540, 62, 28, { led: false, alpha: 0.58 });
+    }
+    road.lineStyle(1, 0x334155, 0.65);
+    road.lineBetween(0, 548, W, 548);
+    road.lineStyle(1, 0xf59e0b, 0.3);
+    road.lineBetween(0, 553, W, 553);
+    road.lineStyle(1, 0x38bdf8, 0.14);
+    road.lineBetween(0, 559, W, 559);
+
+    for (let i = 0; i < 95; i++) {
+      const x = Math.floor(rng() * W);
+      const y = 505 + Math.floor(rng() * 46);
+      const len = 8 + Math.floor(rng() * 28);
+      const color = rng() > 0.55 ? 0xf59e0b : 0x38bdf8;
+      road.lineStyle(1, color, 0.08 + rng() * 0.08);
+      road.lineBetween(x, y, x + len, y);
+    }
+
+    const wreck = this.add.graphics().setDepth(2);
+    wreck.x = 132; wreck.y = 514;
+    wreck.fillStyle(0xf59e0b, 0.05); wreck.fillEllipse(52, 31, 170, 54);
+    this._drawLevel1MetalPanel(wreck, 0, 8, 116, 30, { accent: 0xf59e0b, alpha: 0.92 });
+    this._drawLevel1MetalPanel(wreck, 16, -12, 76, 20, { accent: 0xf59e0b, alpha: 0.96 });
+    wreck.fillStyle(0x020810, 0.95); wreck.fillRect(30, 0, 36, 14);
+    wreck.lineStyle(1, 0x334155, 0.85); wreck.strokeRect(30, 0, 36, 14);
+    wreck.fillStyle(0x38bdf8, 0.45); wreck.fillRect(35, 3, 20, 3);
+    wreck.fillStyle(0xef4444, 0.75); wreck.fillRect(5, 35, 102, 3);
+    wreck.fillStyle(0xf59e0b, 0.9); wreck.fillRect(20, 41, 70, 3);
+    wreck.lineStyle(1, 0xf59e0b, 0.35);
+    wreck.lineBetween(10, 48, 116, 18);
+    wreck.lineBetween(0, 20, 96, 48);
+
+    this._addLevel1LandingPad(650, 482);
+    this._addLevel1DataKiosk(1300, 482);
+    this._addLevel1ProfessorStage(1980, 482);
+
+    [470, 880, 1180, 1660, 2140, 2380].forEach((lx, i) => {
+      const lamp = this.add.graphics().setDepth(3);
+      lamp.x = lx; lamp.y = 552;
+      lamp.fillStyle(0xf59e0b, 0.035); lamp.fillRect(-58, -92, 116, 92);
+      lamp.fillStyle(0xf59e0b, 0.045); lamp.fillEllipse(0, 0, 150, 28);
+      lamp.fillStyle(0x020810, 0.45); lamp.fillEllipse(0, 0, 92, 15);
+      this._drawLevel1MetalPanel(lamp, -4, -74, 8, 74, { led: false, alpha: 0.94 });
+      this._drawLevel1MetalPanel(lamp, -16, -84, 32, 12, { accent: 0xf59e0b, alpha: 0.96 });
+      lamp.fillStyle(0xf59e0b, 0.16); lamp.fillRect(-20, -88, 40, 20);
+      lamp.fillStyle(0xfbbf24, 1); lamp.fillRect(-10, -78, 20, 4);
+      lamp.fillStyle(0xffffff, 0.55); lamp.fillRect(-4, -78, 8, 1);
+      lamp.fillStyle(0xf59e0b, 0.09); lamp.fillEllipse(0, -42, 86, 88);
+      lamp.fillStyle(0xf59e0b, 0.08); lamp.fillEllipse(0, 0, 148, 26);
+      lamp.fillStyle(0xf59e0b, 0.18);
+      lamp.fillRect(-34, -1, 68, 2);
+      lamp.fillStyle(0xf59e0b, 0.1);
+      lamp.fillRect(-50, 3, 100, 2);
+      if (i % 2 === 0) {
+        lamp.fillStyle(0x38bdf8, 0.42);
+        lamp.fillRect(8, -60, 2, 18);
+      }
+
+      const pulse = this.add.rectangle(lx, 474, 26, 4, 0xfbbf24, 0.42).setDepth(4);
+      this.tweens.add({
+        targets: pulse,
+        alpha: 0.14,
+        scaleX: 1.45,
+        duration: 1100 + i * 90,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.InOut',
+      });
     });
 
-    // Ground neon accent — subtle
-    const strip = this.add.graphics();
-    strip.lineStyle(1, 0xf59e0b, 0.08);
-    strip.lineBetween(0, 553, W, 553);
+    [[318, 'ARRIVAL'], [1010, 'GCD'], [1900, 'O(log n)']].forEach(([hx, text]) => {
+      const holo = this.add.graphics().setDepth(3);
+      holo.x = hx; holo.y = 552;
+      this._drawLevel1MetalPanel(holo, -13, -18, 26, 18, { accent: 0x38bdf8, alpha: 0.96 });
+      holo.fillStyle(0x38bdf8, 0.08); holo.fillTriangle(-28, -14, 28, -14, 0, -62);
+      holo.lineStyle(1, 0x38bdf8, 0.28); holo.strokeTriangle(-28, -14, 28, -14, 0, -62);
+      for (let sy = -58; sy < -18; sy += 5) {
+        holo.fillStyle(0x38bdf8, 0.06);
+        holo.fillRect(-18, sy, 36, 1);
+      }
+      this.add.text(hx, 502, text, {
+        fontFamily: 'monospace', fontSize: '9px', color: '#38bdf8',
+        backgroundColor: 'rgba(2, 8, 16, 0.42)', padding: { x: 3, y: 1 },
+      }).setOrigin(0.5).setDepth(4);
+    });
+
+    const cables = this.add.graphics().setDepth(2);
+    cables.lineStyle(1, 0x0f172a, 0.65);
+    for (let i = 0; i < 5; i++) {
+      const y = 354 + i * 11;
+      cables.beginPath();
+      cables.moveTo(0, y);
+      for (let x = 0; x <= W; x += 140) {
+        cables.lineTo(x, y + Math.sin((x + i * 60) / 150) * 9);
+      }
+      cables.strokePath();
+    }
+
+    const canopy = this.add.graphics().setDepth(2);
+    [560, 1250, 1860].forEach(cx => {
+      this._drawLevel1MetalPanel(canopy, cx - 94, 426, 188, 18, { accent: 0xf59e0b, alpha: 0.78 });
+      canopy.fillStyle(0x38bdf8, 0.18);
+      canopy.fillRect(cx - 84, 444, 168, 2);
+      canopy.fillStyle(0xf59e0b, 0.35);
+      canopy.fillRect(cx - 78, 449, 42, 3);
+    });
+    }
+  }
+
+  _drawLevel1MetalPanel(g, x, y, w, h, { accent = 0xf59e0b, alpha = 1, led = true } = {}) {
+    g.fillStyle(0x1e293b, alpha);
+    g.fillRect(x, y, w, h);
+    g.lineStyle(1, 0x334155, 0.82 * alpha);
+    g.strokeRect(x, y, w, h);
+
+    for (let gy = y + 4; gy < y + h - 4; gy += 5) {
+      g.fillStyle(0x334155, 0.38 * alpha);
+      g.fillRect(x + 2, gy, w - 4, 1);
+    }
+
+    g.fillStyle(0x0f172a, 0.58 * alpha);
+    g.fillRect(x + 3, y + 3, Math.max(4, Math.floor(w * 0.18)), 2);
+    g.fillRect(x + w - Math.max(8, Math.floor(w * 0.22)) - 3, y + h - 5, Math.max(6, Math.floor(w * 0.2)), 2);
+
+    g.fillStyle(0x0f172a, 0.8 * alpha);
+    [[x + 4, y + 4], [x + w - 6, y + 4], [x + 4, y + h - 6], [x + w - 6, y + h - 6]].forEach(([rx, ry]) => {
+      g.fillRect(rx, ry, 2, 2);
+    });
+
+    if (led) {
+      g.fillStyle(accent, 0.14 * alpha);
+      g.fillRect(x, y + h - 6, w, 6);
+      g.fillStyle(accent, 0.82 * alpha);
+      g.fillRect(x + 3, y + h - 4, w - 6, 2);
+    }
+  }
+
+  _addLevel1LandingPad(x, surfaceY) {
+    const pad = this.add.graphics().setDepth(4);
+    pad.x = x; pad.y = surfaceY;
+    pad.fillStyle(0x020810, 0.65); pad.fillEllipse(0, 6, 190, 22);
+    this._drawLevel1MetalPanel(pad, -94, -14, 188, 18, { accent: 0xf59e0b, alpha: 0.96 });
+    for (let i = -4; i <= 4; i++) {
+      pad.fillStyle(i % 2 === 0 ? 0x334155 : 0x0f172a, 0.8);
+      pad.fillRect(i * 20 - 9, -11, 17, 10);
+    }
+    pad.fillStyle(0xf59e0b, 0.75); pad.fillRect(-82, -20, 26, 3);
+    pad.fillStyle(0xef4444, 0.55); pad.fillRect(56, -20, 26, 3);
+  }
+
+  _addLevel1DataKiosk(x, surfaceY) {
+    const kiosk = this.add.graphics().setDepth(4);
+    kiosk.x = x + 92; kiosk.y = surfaceY;
+    kiosk.fillStyle(0x020810, 0.55); kiosk.fillEllipse(0, 5, 54, 12);
+    this._drawLevel1MetalPanel(kiosk, -18, -56, 36, 56, { accent: 0x38bdf8, alpha: 0.96 });
+    kiosk.fillStyle(0x38bdf8, 0.14); kiosk.fillRect(-11, -48, 22, 24);
+    kiosk.lineStyle(1, 0x38bdf8, 0.35); kiosk.strokeRect(-11, -48, 22, 24);
+    kiosk.fillStyle(0x38bdf8, 0.5); kiosk.fillRect(-8, -42, 16, 2);
+    kiosk.fillRect(-8, -35, 10, 2);
+    kiosk.fillStyle(0xf59e0b, 0.6); kiosk.fillRect(7, -7, 5, 5);
+  }
+
+  _addLevel1ProfessorStage(x, surfaceY) {
+    const stage = this.add.graphics().setDepth(4);
+    stage.x = x; stage.y = surfaceY;
+    stage.fillStyle(0x020810, 0.55); stage.fillEllipse(0, 6, 160, 18);
+    this._drawLevel1MetalPanel(stage, -74, -10, 148, 14, { accent: 0xf59e0b, alpha: 0.94 });
+    stage.fillStyle(0xfbbf24, 0.45); stage.fillRect(-54, -15, 28, 3);
+    stage.fillStyle(0x38bdf8, 0.34); stage.fillRect(22, -15, 34, 3);
   }
 
   _drawLevel2Props(W, rng) {
@@ -1014,5 +1268,12 @@ export default class GameScene extends Phaser.Scene {
   update(time, delta) {
     this.playerController?.update(time, delta);
     this.interactionSystem?.update(time, delta);
+    if (this.playerShadow && this.player) {
+      this.playerShadow.x = this.player.x;
+      this.playerShadow.y = this.player.y + 31;
+      const grounded = this.player.body?.blocked?.down;
+      this.playerShadow.setAlpha(grounded ? 0.34 : 0.14);
+      this.playerShadow.setScale(grounded ? 1 : 0.72, grounded ? 1 : 0.75);
+    }
   }
 }
