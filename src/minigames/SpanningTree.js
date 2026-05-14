@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 // Kruskal's Algorithm — Minimum Spanning Tree
 // 5 docks (nodes): A, B, C, D, E
@@ -38,7 +36,7 @@ function union(uf, x, y) {
   uf[x] = y; return true;
 }
 
-export default class SpanningTree extends Phaser.Scene {
+export default class SpanningTree extends MinigameBase {
   constructor() { super('SpanningTree'); }
 
   init(data) {
@@ -52,7 +50,7 @@ export default class SpanningTree extends Phaser.Scene {
 
   create() {
     const W = 800, H = 600;
-    this.add.rectangle(W / 2, H / 2, W, H, 0x081020);
+    this.createTablet(this.algorithm?.name || 'SpanningTree');
 
     this.add.text(W / 2, 28, 'Fiber-Optic Network — Minimum Spanning Tree', {
       fontFamily: 'sans-serif', fontSize: '20px', color: '#f8fafc',
@@ -118,10 +116,7 @@ export default class SpanningTree extends Phaser.Scene {
       fontFamily: 'monospace', fontSize: '13px', color: '#4ade80',
     }).setOrigin(0.5);
 
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
 
     this._totalWeight = 0;
   }
@@ -213,9 +208,4 @@ export default class SpanningTree extends Phaser.Scene {
     });
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('SpanningTree');
-  }
 }

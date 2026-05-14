@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 // Consecutive Integer Check: GCD(60, 48)
 // Start at t = min(a,b) = 48, step down until t divides both
@@ -8,7 +6,7 @@ const A = 60;
 const B = 48;
 const GCD = 12;
 
-export default class ConsecutiveInt extends Phaser.Scene {
+export default class ConsecutiveInt extends MinigameBase {
   constructor() {
     super('ConsecutiveInt');
   }
@@ -24,7 +22,7 @@ export default class ConsecutiveInt extends Phaser.Scene {
     const W = 800, H = 600;
 
     // Background
-    this.add.rectangle(W / 2, H / 2, W, H, 0x0d1b2a);
+    this.createTablet(this.algorithm?.name || 'ConsecutiveInt');
 
     // Header
     this.add.text(W / 2, 36, 'The Gift Kits', {
@@ -93,10 +91,7 @@ export default class ConsecutiveInt extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Skip
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
   }
 
   _drawGiftBox(cx, cy, count, label, color) {
@@ -176,9 +171,4 @@ export default class ConsecutiveInt extends Phaser.Scene {
     }
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('ConsecutiveInt');
-  }
 }

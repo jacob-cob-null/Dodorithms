@@ -1,12 +1,10 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 const READINGS = [42, 67, 31, 89, 55, 73, 28, 61];
 const LABELS   = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 const MAX_VAL  = Math.max(...READINGS); // 89
 
-export default class MaxElement extends Phaser.Scene {
+export default class MaxElement extends MinigameBase {
   constructor() {
     super('MaxElement');
   }
@@ -28,7 +26,7 @@ export default class MaxElement extends Phaser.Scene {
     const BASE_Y  = 390;  // y where bars sit
     const SCALE   = 2.2;  // px per unit
 
-    this.add.rectangle(W / 2, H / 2, W, H, 0x0d1b2a);
+    this.createTablet(this.algorithm?.name || 'MaxElement');
 
     this.add.text(W / 2, 36, 'Peak Wind Scanner', {
       fontFamily: 'sans-serif', fontSize: '24px', color: '#f8fafc',
@@ -98,10 +96,7 @@ export default class MaxElement extends Phaser.Scene {
       wordWrap: { width: 680 }, align: 'center',
     }).setOrigin(0.5);
 
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
   }
 
   _highlightMax(idx) {
@@ -188,9 +183,4 @@ export default class MaxElement extends Phaser.Scene {
     });
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('MaxElement');
-  }
 }

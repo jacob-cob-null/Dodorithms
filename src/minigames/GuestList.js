@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 const LEFT_GUESTS  = ['Zyx-7', 'Blorp', 'Krix', 'Nebb'];
 const RIGHT_GUESTS = ['Blorp', 'Quell', 'Zyx-7', 'Nebb'];
@@ -14,7 +12,7 @@ const RIGHT_X = 600;
 const ROW_START_Y = 155;
 const ROW_GAP = 75;
 
-export default class GuestList extends Phaser.Scene {
+export default class GuestList extends MinigameBase {
   constructor() {
     super('GuestList');
   }
@@ -26,7 +24,7 @@ export default class GuestList extends Phaser.Scene {
   create() {
     const W = 800, H = 600;
 
-    this.add.rectangle(W / 2, H / 2, W, H, 0x0a1628);
+    this.createTablet(this.algorithm?.name || 'GuestList');
 
     // Header
     this.add.text(W / 2, 35, '📋  Guest List — Duplicate Detection', {
@@ -103,10 +101,7 @@ export default class GuestList extends Phaser.Scene {
     this.deleteGroup.setVisible(false);
 
     // Skip
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
   }
 
   selectLeft(idx) {
@@ -191,8 +186,4 @@ export default class GuestList extends Phaser.Scene {
     });
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.stop();
-  }
 }

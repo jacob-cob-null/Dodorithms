@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 // Backtracking — 4-Queens Problem
 // Place 4 queens on a 4×4 board so none attack each other.
@@ -14,7 +12,7 @@ const CELL = 76;
 const GRID_X = 200; // left edge of grid
 const GRID_Y = 130; // top edge of grid
 
-export default class QueenGrid extends Phaser.Scene {
+export default class QueenGrid extends MinigameBase {
   constructor() { super('QueenGrid'); }
 
   init(data) {
@@ -27,7 +25,7 @@ export default class QueenGrid extends Phaser.Scene {
 
   create() {
     const W = 800, H = 600;
-    this.add.rectangle(W / 2, H / 2, W, H, 0x0a0a1a);
+    this.createTablet(this.algorithm?.name || 'QueenGrid');
 
     this.add.text(W / 2, 26, 'Queen Security Grid — Backtracking', {
       fontFamily: 'sans-serif', fontSize: '20px', color: '#f8fafc',
@@ -98,10 +96,7 @@ export default class QueenGrid extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setAlpha(0.3);
     this.backtrackBtn.on('pointerdown', () => { if (!this.solved && !this.waiting && this.queens.length > 0) this._backtrack(); });
 
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
   }
 
   _isSafe(row, col) {
@@ -234,9 +229,4 @@ export default class QueenGrid extends Phaser.Scene {
     });
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('QueenGrid');
-  }
 }

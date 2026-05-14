@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 // Dijkstra's Algorithm — Shortest Path in a weighted graph
 // Nodes: START, HUB_A, HUB_B, RELAY_1, RELAY_2, CORE
@@ -42,7 +40,7 @@ const EDGES = [
 const CORRECT_VISIT_ORDER = [0, 2, 3, 5]; // START, HUB_B, RELAY_1, CORE
 // After visiting START the initial state is set — user picks from remaining
 
-export default class ServerRouting extends Phaser.Scene {
+export default class ServerRouting extends MinigameBase {
   constructor() { super('ServerRouting'); }
 
   init(data) {
@@ -58,7 +56,7 @@ export default class ServerRouting extends Phaser.Scene {
 
   create() {
     const W = 800, H = 600;
-    this.add.rectangle(W / 2, H / 2, W, H, 0x081020);
+    this.createTablet(this.algorithm?.name || 'ServerRouting');
 
     this.add.text(W / 2, 28, 'Server Routing — Dijkstra\'s Algorithm', {
       fontFamily: 'sans-serif', fontSize: '20px', color: '#f8fafc',
@@ -129,10 +127,7 @@ export default class ServerRouting extends Phaser.Scene {
       align: 'center',
     }).setOrigin(0.5);
 
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
 
     // Auto-visit START
     this._processVisit(0);
@@ -269,9 +264,4 @@ export default class ServerRouting extends Phaser.Scene {
     });
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('ServerRouting');
-  }
 }

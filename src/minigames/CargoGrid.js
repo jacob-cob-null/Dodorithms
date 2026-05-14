@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 // 0/1 Knapsack DP — pack max value within capacity 4
 // Items: ZZS Crystal (w=1,v=2), Fuel Cell (w=3,v=4), Med Kit (w=2,v=3)
@@ -38,7 +36,7 @@ const CELL_W = 72, CELL_H = 38;
 const TABLE_X = 210, TABLE_Y = 210; // top-left of dp[1][0] (row headers offset)
 const ROW_LABELS = ['(none)', 'Crystal', 'FuelCell', 'MedKit'];
 
-export default class CargoGrid extends Phaser.Scene {
+export default class CargoGrid extends MinigameBase {
   constructor() { super('CargoGrid'); }
 
   init(data) {
@@ -50,7 +48,7 @@ export default class CargoGrid extends Phaser.Scene {
 
   create() {
     const W = 800, H = 600;
-    this.add.rectangle(W / 2, H / 2, W, H, 0x100518);
+    this.createTablet(this.algorithm?.name || 'CargoGrid');
 
     this.add.text(W / 2, 28, 'Cargo Grid — 0/1 Knapsack', {
       fontFamily: 'sans-serif', fontSize: '22px', color: '#f8fafc',
@@ -135,10 +133,7 @@ export default class CargoGrid extends Phaser.Scene {
       wordWrap: { width: 680 }, align: 'center',
     }).setOrigin(0.5);
 
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
   }
 
   fillNextRow() {
@@ -235,9 +230,4 @@ export default class CargoGrid extends Phaser.Scene {
     });
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('CargoGrid');
-  }
 }

@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 // DFS through maintenance tunnels
 // Graph: START → A → C (dead end), D → GOAL
@@ -39,7 +37,7 @@ const STEPS = [
   { action: 'found',     node: 'GOAL',  stackAfter: ['B'],                msg: 'Pop GOAL (top). DESTINATION FOUND! Path: START → A → D → GOAL.' },
 ];
 
-export default class DFS extends Phaser.Scene {
+export default class DFS extends MinigameBase {
   constructor() {
     super('DFS');
   }
@@ -54,7 +52,7 @@ export default class DFS extends Phaser.Scene {
 
   create() {
     const W = 800, H = 600;
-    this.add.rectangle(W / 2, H / 2, W, H, 0x0d0a1f);
+    this.createTablet(this.algorithm?.name || 'DFS');
 
     this.add.text(W / 2, 34, 'Maintenance Tunnels — Depth-First Search', {
       fontFamily: 'sans-serif', fontSize: '20px', color: '#f8fafc',
@@ -122,10 +120,7 @@ export default class DFS extends Phaser.Scene {
     this.nextBtn.on('pointerout',  () => { if (!this.solved) this.nextBtn.setStyle({ backgroundColor: '#a855f7' }); });
     this.nextBtn.on('pointerdown', () => { if (!this.solved) this.advanceStep(); });
 
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
   }
 
   _redrawNode(id, fillColor, strokeColor) {
@@ -196,9 +191,4 @@ export default class DFS extends Phaser.Scene {
     }
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('DFS');
-  }
 }

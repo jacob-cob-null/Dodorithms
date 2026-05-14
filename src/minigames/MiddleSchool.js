@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 // Middle School Procedure: Prime Factorization of 60
 // 60 → ÷2 → 30 → ÷2 → 15 → ÷3 → 5 (prime)
@@ -9,7 +7,7 @@ import { EVENTS } from '../systems/events.js';
 const PRIMES = [2, 3, 5, 7];
 const TARGET = 60;
 
-export default class MiddleSchool extends Phaser.Scene {
+export default class MiddleSchool extends MinigameBase {
   constructor() {
     super('MiddleSchool');
   }
@@ -24,7 +22,7 @@ export default class MiddleSchool extends Phaser.Scene {
   create() {
     const W = 800, H = 600;
 
-    this.add.rectangle(W / 2, H / 2, W, H, 0x0d1b2a);
+    this.createTablet(this.algorithm?.name || 'MiddleSchool');
 
     // Header
     this.add.text(W / 2, 36, 'Phone Security — Middle School Procedure', {
@@ -80,10 +78,7 @@ export default class MiddleSchool extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Skip
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
   }
 
   _drawCurrentNumber() {
@@ -175,9 +170,4 @@ export default class MiddleSchool extends Phaser.Scene {
     }
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('MiddleSchool');
-  }
 }

@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 // Quicksort — user picks pivot, we partition, repeat on sub-arrays
 const INITIAL = [5, 3, 8, 1, 9, 2, 7];
@@ -24,7 +22,7 @@ function lomuto(arr, lo, hi, pivotIdx) {
   return { arr: a, finalIdx: i + 1 };
 }
 
-export default class QuickSort extends Phaser.Scene {
+export default class QuickSort extends MinigameBase {
   constructor() {
     super('QuickSort');
   }
@@ -41,7 +39,7 @@ export default class QuickSort extends Phaser.Scene {
 
   create() {
     const W = 800, H = 600;
-    this.add.rectangle(W / 2, H / 2, W, H, 0x050b18);
+    this.createTablet(this.algorithm?.name || 'QuickSort');
 
     this.add.text(W / 2, 32, 'Cargo Manifest — Quicksort', {
       fontFamily: 'sans-serif', fontSize: '22px', color: '#f8fafc',
@@ -95,10 +93,7 @@ export default class QuickSort extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     this.autoBtn.on('pointerdown', () => { if (!this.solved) this._autoComplete(); });
 
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
 
     this._refreshDisplay();
   }
@@ -237,9 +232,4 @@ export default class QuickSort extends Phaser.Scene {
     });
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('QuickSort');
-  }
 }
