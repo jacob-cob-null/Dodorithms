@@ -339,10 +339,16 @@ export default class GameScene extends Phaser.Scene {
     const seed = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
     const rng = this._seededRandom(seed);
 
+    let hasStarLayer = false;
     parallax.forEach(layer => {
       if (layer.type === 'cityFar' || layer.type === 'cityNear') return;
-      const g = this.add.graphics().setScrollFactor(layer.scrollFactor);
-      if (layer.type === 'stars') this._drawStars(g, worldWidth, rng);
+      const g = this.add.graphics()
+        .setScrollFactor(layer.scrollFactor)
+        .setDepth(layer.scrollFactor > 0.08 ? -22 : -28);
+      if (layer.type === 'stars') {
+        hasStarLayer = true;
+        this._drawStars(g, worldWidth, rng);
+      }
     });
 
     if (id === 'level1') {
@@ -384,6 +390,10 @@ export default class GameScene extends Phaser.Scene {
 
     // Ambient dust motes — floating particles across world
     this._spawnDustMotes(worldWidth);
+    if (hasStarLayer) {
+      this._addAnimatedSkyEffects(worldWidth, rng);
+      this._addShootingStars(worldWidth, rng);
+    }
   }
 
   _spawnDustMotes(W) {
@@ -415,10 +425,14 @@ export default class GameScene extends Phaser.Scene {
 
   _addTwinkleStars(W) {
     // 6 individual bright stars that pulse alpha — scrollFactor matches star layer
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 10; i++) {
       const s = this.add.graphics().setScrollFactor(0.05);
-      s.fillStyle(0xffffff, 0.9);
-      s.fillRect(0, 0, 2, 2);
+      const cool = Math.random() > 0.45;
+      s.fillStyle(cool ? 0xbfdbfe : 0xffffff, 0.92);
+      s.fillRect(0, 0, i % 3 === 0 ? 3 : 2, i % 4 === 0 ? 3 : 2);
+      s.fillStyle(cool ? 0x38bdf8 : 0xfbbf24, 0.08);
+      s.fillRect(-5, 0, 12, 1);
+      s.fillRect(1, -5, 1, 12);
       s.x = 60 + Math.floor(Math.random() * (W - 120));
       s.y = 20 + Math.floor(Math.random() * 300);
       this.tweens.add({
@@ -429,6 +443,148 @@ export default class GameScene extends Phaser.Scene {
         yoyo: true,
         repeat: -1,
         ease: 'Sine.InOut',
+      });
+    }
+  }
+
+  _addAnimatedSkyEffects(W, rng) {
+    const auroraDefs = [
+      { y: 84, color: 0x22c55e, scroll: 0.035, depth: -18, alpha: 0.32, dir: 1 },
+      { y: 142, color: 0x38bdf8, scroll: 0.045, depth: -17, alpha: 0.28, dir: -1 },
+      { y: 204, color: 0xa855f7, scroll: 0.055, depth: -16, alpha: 0.22, dir: 1 },
+    ];
+
+    auroraDefs.forEach((def, bandIndex) => {
+      const band = this.add.graphics()
+        .setScrollFactor(def.scroll)
+        .setDepth(def.depth);
+      const width = W + 360;
+      for (let x = -180; x < width; x += 16) {
+        const wave = Math.sin((x + bandIndex * 70) / (115 + bandIndex * 30)) * (16 + bandIndex * 8);
+        const y = wave;
+        const nextWave = Math.sin((x + 18 + bandIndex * 70) / (115 + bandIndex * 30)) * (16 + bandIndex * 8);
+        band.lineStyle(5, def.color, def.alpha * 0.1);
+        band.lineBetween(x - 2, y + 2, x + 20, nextWave + 2);
+        band.lineStyle(3, def.color, def.alpha * 0.22);
+        band.lineBetween(x - 1, y + 1, x + 19, nextWave + 1);
+        band.lineStyle(2, def.color, def.alpha * 0.62);
+        band.lineBetween(x, y, x + 18, nextWave);
+        band.lineStyle(1, 0xffffff, def.alpha * 0.18);
+        band.lineBetween(x + 2, y - 1, x + 14, nextWave - 1);
+        band.fillStyle(def.color, def.alpha * 0.24);
+        band.fillRect(x + 5, y + 7, 12, 2);
+        if (x % 80 === 0) {
+          const h = 20 + Math.sin((x + bandIndex * 45) / 55) * 8;
+          band.fillStyle(def.color, 0.03);
+          band.fillRect(x + 8, y + 4, 3, h);
+        }
+      }
+      band.x = def.dir > 0 ? -90 : 90;
+      band.y = def.y;
+      band.alpha = 0.78;
+      this.tweens.add({
+        targets: band,
+        x: band.x + def.dir * 170,
+        alpha: 1,
+        scaleY: 1.08,
+        duration: 8200 + bandIndex * 1800,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.InOut',
+      });
+    });
+
+    [
+      { x: W * 0.28, y: 110, color: 0x38bdf8, core: 0xf8fafc },
+      { x: W * 0.72, y: 205, color: 0xa855f7, core: 0xfbbf24 },
+    ].forEach((src, i) => {
+      const glow = this.add.graphics()
+        .setScrollFactor(0.035)
+        .setDepth(-15);
+      glow.fillStyle(src.color, 0.045);
+      glow.fillEllipse(0, 0, 118 - i * 18, 34);
+      glow.fillStyle(src.core, 0.13);
+      glow.fillRect(-3, -3, 6, 6);
+      glow.fillStyle(src.color, 0.16);
+      glow.fillRect(-44, -1, 88, 2);
+      glow.fillRect(-1, -16, 2, 32);
+      glow.x = src.x;
+      glow.y = src.y;
+      this.tweens.add({
+        targets: glow,
+        alpha: 0.28,
+        scaleX: 1.18,
+        scaleY: 1.18,
+        angle: i ? -4 : 4,
+        duration: 2600 + i * 600,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.InOut',
+      });
+    });
+
+    [
+      { x: Math.min(W - 220, 700), y: 95, color: 0x38bdf8, w: 154, h: 24 },
+      { x: Math.max(260, W - 520), y: 150, color: 0xf59e0b, w: 102, h: 17 },
+    ].forEach((p, i) => {
+      const ring = this.add.graphics()
+        .setScrollFactor(0.05)
+        .setDepth(-14);
+      ring.lineStyle(2, p.color, 0.22);
+      ring.strokeEllipse(0, 0, p.w, p.h);
+      ring.lineStyle(1, 0xffffff, 0.1);
+      ring.strokeEllipse(0, 0, p.w - 14, p.h - 5);
+      ring.x = p.x;
+      ring.y = p.y + 2;
+      this.tweens.add({
+        targets: ring,
+        alpha: 0.24,
+        scaleX: 1.13,
+        duration: 1700 + i * 420,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.InOut',
+      });
+    });
+  }
+
+  _addShootingStars(W, rng) {
+    const colors = [0xffffff, 0x93c5fd, 0x67e8f9, 0xfbbf24];
+    for (let i = 0; i < 4; i++) {
+      const star = this.add.graphics().setScrollFactor(0.035 + i * 0.008).setDepth(-13);
+      const color = colors[i % colors.length];
+      star.lineStyle(1, color, 0.58);
+      star.lineBetween(0, 0, -54, -18);
+      star.lineStyle(1, color, 0.18);
+      star.lineBetween(-10, 2, -86, -24);
+      star.fillStyle(0xffffff, 0.95);
+      star.fillRect(0, -1, 3, 3);
+      star.fillStyle(color, 0.08);
+      star.fillRect(-72, -22, 72, 4);
+
+      const startX = 140 + rng() * (W - 280);
+      const startY = 35 + rng() * 190;
+      star.x = startX;
+      star.y = startY;
+      star.alpha = 0;
+
+      const reset = () => {
+        star.x = 80 + rng() * (W - 160);
+        star.y = 35 + rng() * 210;
+        star.alpha = 0;
+      };
+
+      this.tweens.add({
+        targets: star,
+        x: startX + 180 + rng() * 170,
+        y: startY + 58 + rng() * 70,
+        alpha: { from: 0, to: 0.82 },
+        duration: 1050 + i * 170,
+        delay: 1200 + i * 1650,
+        repeat: -1,
+        repeatDelay: 4600 + i * 1400,
+        ease: 'Cubic.Out',
+        onRepeat: reset,
       });
     }
   }
@@ -473,6 +629,140 @@ export default class GameScene extends Phaser.Scene {
   }
 
   _drawStars(g, W, rng) {
+    {
+      const sf = g.scrollFactorX ?? 0.05;
+      const isNearLayer = sf > 0.08;
+
+      if (!isNearLayer) {
+        g.fillStyle(0x020814, 1);
+        g.fillRect(0, 0, W, 150);
+        g.fillStyle(0x041020, 1);
+        g.fillRect(0, 150, W, 185);
+        g.fillStyle(0x071426, 1);
+        g.fillRect(0, 335, W, 210);
+        g.fillStyle(0x38bdf8, 0.018);
+        g.fillRect(0, 72, W, 210);
+        g.fillStyle(0xa855f7, 0.012);
+        g.fillRect(0, 186, W, 150);
+
+        [
+          { y: 82, color: 0x22c55e, phase: 0, width: 180 },
+          { y: 124, color: 0x38bdf8, phase: 90, width: 230 },
+          { y: 176, color: 0xa855f7, phase: 180, width: 210 },
+        ].forEach((a, bandIndex) => {
+          for (let x = -40; x < W + 80; x += 18) {
+            const wave = Math.sin((x + a.phase) / a.width) * (18 + bandIndex * 7);
+            const y = a.y + wave;
+            const next = Math.sin((x + 18 + a.phase) / a.width) * (18 + bandIndex * 7);
+            g.lineStyle(5, a.color, 0.015);
+            g.lineBetween(x - 2, y + 2, x + 20, a.y + next + 2);
+            g.lineStyle(3, a.color, 0.032);
+            g.lineBetween(x - 1, y + 1, x + 19, a.y + next + 1);
+            g.lineStyle(2, a.color, 0.085);
+            g.lineBetween(x, y, x + 18, a.y + next);
+            g.lineStyle(1, 0xffffff, 0.026);
+            g.lineBetween(x + 2, y - 1, x + 15, a.y + next - 1);
+            g.fillStyle(a.color, 0.052);
+            g.fillRect(x + 5, y + 6, 12, 2);
+            if (bandIndex === 1 && x % 90 === 0) {
+              g.fillStyle(0xffffff, 0.026);
+              g.fillRect(x + 8, y + 2, 3, 24);
+            }
+          }
+        });
+
+        [
+          { x: W * 0.28, y: 110, color: 0x38bdf8, core: 0xf8fafc, rot: 0.3 },
+          { x: W * 0.72, y: 205, color: 0xa855f7, core: 0xfbbf24, rot: -0.4 },
+        ].forEach((galaxy, gi) => {
+          g.fillStyle(galaxy.color, 0.03);
+          g.fillEllipse(galaxy.x, galaxy.y, 260 - gi * 40, 78);
+          g.fillStyle(galaxy.core, 0.08);
+          g.fillEllipse(galaxy.x, galaxy.y, 56, 22);
+          for (let arm = 0; arm < 2; arm++) {
+            for (let step = 0; step < 72; step++) {
+              const t = step / 9;
+              const radius = 8 + step * 1.55;
+              const angle = t + arm * Math.PI + galaxy.rot;
+              const px = galaxy.x + Math.cos(angle) * radius * 1.55;
+              const py = galaxy.y + Math.sin(angle) * radius * 0.42;
+              const color = step % 3 === 0 ? galaxy.core : galaxy.color;
+              g.fillStyle(color, 0.12 - step * 0.0011);
+              g.fillRect(px, py, step % 7 === 0 ? 3 : 2, 2);
+            }
+          }
+          g.fillStyle(0xffffff, 0.82);
+          g.fillRect(galaxy.x - 2, galaxy.y - 2, 4, 4);
+        });
+
+        [
+          { x: Math.min(W - 220, 700), y: 95, r: 46, body: 0x2d4f75, shade: 0x1e3a5f, ring: 0x38bdf8 },
+          { x: Math.max(260, W - 520), y: 150, r: 30, body: 0x7c3aed, shade: 0x312e81, ring: 0xf59e0b },
+        ].forEach((p, i) => {
+          g.fillStyle(p.ring, 0.032);
+          g.fillCircle(p.x, p.y, p.r * 1.9);
+          g.fillStyle(0xffffff, 0.028);
+          g.fillCircle(p.x - p.r * 0.22, p.y - p.r * 0.22, p.r * 1.05);
+          g.lineStyle(i === 0 ? 3 : 2, p.ring, 0.24);
+          g.strokeEllipse(p.x, p.y + 2, p.r * 2.8, p.r * 0.48);
+          g.lineStyle(1, 0xffffff, 0.2);
+          g.strokeEllipse(p.x, p.y + 1, p.r * 2.55, p.r * 0.36);
+          g.fillStyle(p.shade, 1);
+          g.fillCircle(p.x, p.y, p.r);
+          g.fillStyle(p.body, 1);
+          g.fillCircle(p.x - p.r * 0.12, p.y - p.r * 0.08, p.r * 0.82);
+          g.fillStyle(0xffffff, 0.16);
+          g.fillCircle(p.x - p.r * 0.34, p.y - p.r * 0.38, p.r * 0.18);
+          g.fillStyle(0x93c5fd, 0.2);
+          g.fillRect(p.x - p.r * 0.74, p.y - p.r * 0.12, p.r * 1.15, 3);
+          g.fillStyle(p.ring, 0.22);
+          g.fillRect(p.x - p.r * 0.54, p.y + p.r * 0.22, p.r * 0.82, 2);
+          g.fillStyle(p.shade, 0.48);
+          g.fillCircle(p.x - p.r * 0.24, p.y - p.r * 0.1, p.r * 0.17);
+          g.fillCircle(p.x + p.r * 0.26, p.y + p.r * 0.24, p.r * 0.1);
+        });
+      }
+
+      const starCount = isNearLayer ? 190 : 460;
+      for (let i = 0; i < starCount; i++) {
+        const x = rng() * W;
+        const y = rng() * (isNearLayer ? 420 : 500);
+        const r = rng();
+        const sz = isNearLayer ? (r > 0.9 ? 3 : r > 0.58 ? 2 : 1) : (r > 0.94 ? 3 : r > 0.76 ? 2 : 1);
+        const palette = [0xffffff, 0xbfdbfe, 0x93c5fd, 0xfef3c7, 0x67e8f9];
+        const color = palette[Math.floor(rng() * palette.length)];
+        const alpha = (isNearLayer ? 0.2 : 0.18) + rng() * (isNearLayer ? 0.62 : 0.78);
+        g.fillStyle(color, alpha);
+        g.fillRect(x, y, sz, sz);
+        if (r > 0.985) {
+          g.fillStyle(color, 0.08);
+          g.fillRect(x - 5, y, 12, 1);
+          g.fillRect(x, y - 5, 1, 12);
+        }
+      }
+
+      for (let i = 0; i < (isNearLayer ? 4 : 10); i++) {
+        const sx = rng() * W;
+        const sy = 20 + rng() * 320;
+        const color = rng() > 0.5 ? 0x93c5fd : 0xffffff;
+        g.fillStyle(color, 0.07);
+        g.fillCircle(sx, sy, 10 + rng() * 8);
+        g.fillStyle(0xffffff, 0.9);
+        g.fillRect(sx - 1, sy - 1, 3, 3);
+      }
+
+      for (let i = 0; i < 5; i++) {
+        const sx = rng() * W * 0.86;
+        const sy = 35 + rng() * 210;
+        const len = 44 + rng() * 82;
+        const color = rng() > 0.4 ? 0xffffff : 0x67e8f9;
+        g.lineStyle(1, color, isNearLayer ? 0.18 : 0.26);
+        g.lineBetween(sx, sy, sx + len, sy + 14 + rng() * 22);
+        g.fillStyle(color, isNearLayer ? 0.3 : 0.42);
+        g.fillRect(sx + len - 2, sy + 14, 3, 2);
+      }
+    }
+    return;
     // Sky gradient — dark at top, slightly lighter at horizon
     g.fillStyle(0x020810, 1);
     g.fillRect(0, 0, W, 200);
@@ -649,18 +939,20 @@ export default class GameScene extends Phaser.Scene {
     const sky = this.add.graphics().setScrollFactor(0.08).setDepth(-20);
     const moonX = 1680;
     const moonY = 92;
-    sky.fillStyle(0xf59e0b, 0.035); sky.fillCircle(moonX, moonY, 70);
-    sky.fillStyle(0x2b1a38, 0.9); sky.fillCircle(moonX, moonY, 34);
-    sky.fillStyle(0x4c2d5f, 0.9); sky.fillCircle(moonX - 5, moonY - 4, 27);
-    sky.fillStyle(0xf59e0b, 0.25); sky.fillRect(moonX - 16, moonY - 2, 22, 3);
-    sky.fillStyle(0x38bdf8, 0.16); sky.fillRect(moonX - 26, moonY + 8, 34, 2);
+    sky.fillStyle(0xf59e0b, 0.03); sky.fillCircle(moonX, moonY, 72);
+    sky.fillStyle(0x38bdf8, 0.018); sky.fillCircle(moonX - 10, moonY + 4, 92);
+    sky.fillStyle(0x2b1a38, 0.74); sky.fillCircle(moonX, moonY, 32);
+    sky.fillStyle(0x5b3b73, 0.84); sky.fillCircle(moonX - 5, moonY - 4, 25);
+    sky.fillStyle(0xffffff, 0.14); sky.fillCircle(moonX - 14, moonY - 14, 7);
+    sky.fillStyle(0xf59e0b, 0.22); sky.fillRect(moonX - 16, moonY - 2, 22, 2);
+    sky.fillStyle(0x38bdf8, 0.18); sky.fillRect(moonX - 26, moonY + 8, 34, 2);
 
     for (let lane = 0; lane < 5; lane++) {
       const y = 130 + lane * 38 + Math.floor(rng() * 14);
       for (let x = 120 + lane * 70; x < W; x += 420 + Math.floor(rng() * 130)) {
-        sky.fillStyle(lane % 2 === 0 ? 0xf59e0b : 0x38bdf8, 0.18);
-        sky.fillRect(x, y, 44 + Math.floor(rng() * 30), 2);
-        sky.fillStyle(0xffffff, 0.28);
+        sky.fillStyle(lane % 2 === 0 ? 0xf59e0b : 0x38bdf8, 0.12);
+        sky.fillRect(x, y, 34 + Math.floor(rng() * 24), 1);
+        sky.fillStyle(0xffffff, 0.22);
         sky.fillRect(x + 2, y, 2, 2);
       }
     }
