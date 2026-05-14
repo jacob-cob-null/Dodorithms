@@ -197,21 +197,32 @@ export default class GameScene extends Phaser.Scene {
     const g = this.add.graphics().setDepth(5);
 
     // Pixel rim aura: layered rectangles instead of soft circles, so it keeps the pixel-art read.
-    g.fillStyle(led, 0.035);
-    g.fillRect(x - 8, y + h - 7, w + 16, 14);
-    g.fillStyle(led, 0.06);
-    g.fillRect(x - 4, y + h - 5, w + 8, 9);
-    g.fillStyle(led, 0.18);
-    g.fillRect(x, y + h - 3, w, 3);
-    g.fillStyle(0xffffff, 0.12);
-    g.fillRect(x + 4, y + h - 4, Math.max(16, w * 0.28), 1);
+    g.fillStyle(led, 0.05);
+    g.fillRect(x - 10, y + h - 9, w + 20, 18);
+    g.fillStyle(led, 0.08);
+    g.fillRect(x - 6, y + h - 6, w + 12, 11);
+    g.fillStyle(led, 0.13);
+    g.fillRect(x - 2, y + h - 4, w + 4, 6);
+
+    const rim = this.add.rectangle(p.x, y + h - 2, w, 3, led, 0.56).setDepth(8);
+    const rimCore = this.add.rectangle(p.x, y + h - 3, Math.max(22, w * 0.36), 1, 0xffffff, 0.42).setDepth(9);
+    const underGlow = this.add.rectangle(p.x, y + h + 3, w + 12, 5, led, 0.18).setDepth(6);
+    this.tweens.add({
+      targets: [rim, rimCore, underGlow],
+      alpha: { from: 0.24, to: 0.72 },
+      duration: theme === 'tech' ? 780 : 1050,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.InOut',
+    });
 
     // Small pulsing endpoint LEDs make platforms feel powered without distracting.
     [x + 8, x + w - 12].forEach((px, idx) => {
-      const dot = this.add.rectangle(px, y + h - 2, 4, 2, led, 0.8).setDepth(8);
+      const dot = this.add.rectangle(px, y + h - 3, 5, 3, led, 0.9).setDepth(10);
+      const dotGlow = this.add.rectangle(px, y + h - 3, 16, 5, led, 0.16).setDepth(9);
       this.tweens.add({
-        targets: dot,
-        alpha: 0.25,
+        targets: [dot, dotGlow],
+        alpha: 0.24,
         duration: 950 + idx * 180,
         yoyo: true,
         repeat: -1,
@@ -772,7 +783,7 @@ export default class GameScene extends Phaser.Scene {
     [[318, 'ARRIVAL'], [1010, 'GCD'], [1900, 'O(log n)']].forEach(([hx, text]) => {
       const holo = this.add.graphics().setDepth(3);
       holo.x = hx; holo.y = 552;
-      this._drawLevel1MetalPanel(holo, -13, -18, 26, 18, { accent: 0x38bdf8, alpha: 0.96 });
+      this._drawLevel1MetalPanel(holo, -13, -18, 26, 18, { accent: 0x38bdf8, alpha: 0.56 });
       holo.fillStyle(0x38bdf8, 0.08); holo.fillTriangle(-28, -14, 28, -14, 0, -62);
       holo.lineStyle(1, 0x38bdf8, 0.28); holo.strokeTriangle(-28, -14, 28, -14, 0, -62);
       for (let sy = -58; sy < -18; sy += 5) {
@@ -799,10 +810,10 @@ export default class GameScene extends Phaser.Scene {
 
     const canopy = this.add.graphics().setDepth(2);
     [560, 1250, 1860].forEach(cx => {
-      this._drawLevel1MetalPanel(canopy, cx - 94, 426, 188, 18, { accent: 0xf59e0b, alpha: 0.78 });
-      canopy.fillStyle(0x38bdf8, 0.18);
+      this._drawLevel1MetalPanel(canopy, cx - 94, 426, 188, 18, { accent: 0xf59e0b, alpha: 0.34 });
+      canopy.fillStyle(0x38bdf8, 0.09);
       canopy.fillRect(cx - 84, 444, 168, 2);
-      canopy.fillStyle(0xf59e0b, 0.35);
+      canopy.fillStyle(0xf59e0b, 0.18);
       canopy.fillRect(cx - 78, 449, 42, 3);
     });
     }
@@ -836,17 +847,53 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  _addPixelGlow(x, y, w, h, color, { depth = 6, alpha = 0.36, pulse = true } = {}) {
+    const glow = this.add.rectangle(x, y, w, h, color, alpha).setDepth(depth);
+    const core = this.add.rectangle(x, y, Math.max(2, Math.floor(w * 0.45)), Math.max(2, Math.floor(h * 0.45)), 0xffffff, alpha * 0.45).setDepth(depth + 1);
+    if (pulse) {
+      this.tweens.add({
+        targets: [glow, core],
+        alpha: alpha * 0.35,
+        duration: 900 + (x % 5) * 140,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.InOut',
+      });
+    }
+    return { glow, core };
+  }
+
+  _addLevelPylon(x, y, h, accent, label) {
+    const g = this.add.graphics().setDepth(4);
+    this._drawLevel1MetalPanel(g, x - 13, y - h, 26, h, { accent, alpha: 0.9 });
+    this._drawLevel1MetalPanel(g, x - 30, y - h - 22, 60, 24, { accent, alpha: 0.86 });
+    g.fillStyle(accent, 0.2);
+    g.fillRect(x - 22, y - h - 15, 44, 8);
+    g.fillStyle(accent, 0.65);
+    g.fillRect(x - 16, y - h - 11, 32, 2);
+    this._addPixelGlow(x, y - h - 10, 56, 10, accent, { depth: 5, alpha: 0.22 });
+    if (label) {
+      this.add.text(x, y - h - 37, label, {
+        fontFamily: 'monospace',
+        fontSize: '9px',
+        color: '#dbeafe',
+        backgroundColor: 'rgba(2, 8, 16, 0.58)',
+        padding: { x: 4, y: 1 },
+      }).setOrigin(0.5).setDepth(6);
+    }
+  }
+
   _addLevel1LandingPad(x, surfaceY) {
     const pad = this.add.graphics().setDepth(4);
     pad.x = x; pad.y = surfaceY;
     pad.fillStyle(0x020810, 0.65); pad.fillEllipse(0, 6, 190, 22);
-    this._drawLevel1MetalPanel(pad, -94, -14, 188, 18, { accent: 0xf59e0b, alpha: 0.96 });
+    this._drawLevel1MetalPanel(pad, -94, -14, 188, 18, { accent: 0xf59e0b, alpha: 0.46 });
     for (let i = -4; i <= 4; i++) {
-      pad.fillStyle(i % 2 === 0 ? 0x334155 : 0x0f172a, 0.8);
+      pad.fillStyle(i % 2 === 0 ? 0x334155 : 0x0f172a, 0.46);
       pad.fillRect(i * 20 - 9, -11, 17, 10);
     }
-    pad.fillStyle(0xf59e0b, 0.75); pad.fillRect(-82, -20, 26, 3);
-    pad.fillStyle(0xef4444, 0.55); pad.fillRect(56, -20, 26, 3);
+    pad.fillStyle(0xf59e0b, 0.36); pad.fillRect(-82, -20, 26, 3);
+    pad.fillStyle(0xef4444, 0.3); pad.fillRect(56, -20, 26, 3);
   }
 
   _addLevel1DataKiosk(x, surfaceY) {
@@ -865,12 +912,202 @@ export default class GameScene extends Phaser.Scene {
     const stage = this.add.graphics().setDepth(4);
     stage.x = x; stage.y = surfaceY;
     stage.fillStyle(0x020810, 0.55); stage.fillEllipse(0, 6, 160, 18);
-    this._drawLevel1MetalPanel(stage, -74, -10, 148, 14, { accent: 0xf59e0b, alpha: 0.94 });
-    stage.fillStyle(0xfbbf24, 0.45); stage.fillRect(-54, -15, 28, 3);
-    stage.fillStyle(0x38bdf8, 0.34); stage.fillRect(22, -15, 34, 3);
+    this._drawLevel1MetalPanel(stage, -74, -10, 148, 14, { accent: 0xf59e0b, alpha: 0.44 });
+    stage.fillStyle(0xfbbf24, 0.26); stage.fillRect(-54, -15, 28, 3);
+    stage.fillStyle(0x38bdf8, 0.22); stage.fillRect(22, -15, 34, 3);
   }
 
   _drawLevel2Props(W, rng) {
+    {
+      const accent = 0x06b6d4;
+      const floor = this.add.graphics().setDepth(1);
+      for (let x = 0; x < W; x += 76) {
+        this._drawLevel1MetalPanel(floor, x, 540, 74, 28, { accent, alpha: 0.5 });
+      }
+      floor.fillStyle(accent, 0.12); floor.fillRect(0, 552, W, 2);
+      floor.lineStyle(1, 0x334155, 0.68); floor.lineBetween(0, 548, W, 548);
+      floor.lineStyle(1, accent, 0.28); floor.lineBetween(0, 557, W, 557);
+      floor.lineStyle(1, 0xf59e0b, 0.14); floor.lineBetween(0, 562, W, 562);
+
+      for (let i = 0; i < 88; i++) {
+        const sx = Math.floor(rng() * W);
+        const sy = 506 + Math.floor(rng() * 44);
+        const len = 8 + Math.floor(rng() * 26);
+        const color = rng() > 0.72 ? 0xf59e0b : accent;
+        floor.lineStyle(1, color, 0.06 + rng() * 0.08);
+        floor.lineBetween(sx, sy, sx + len, sy);
+      }
+
+      const ceiling = this.add.graphics().setDepth(2);
+      for (let i = 0; i < 6; i++) {
+        const y = 256 + i * 16;
+        ceiling.lineStyle(1, i % 2 ? 0x1e3a5f : 0x020810, 0.58);
+        ceiling.beginPath();
+        ceiling.moveTo(0, y);
+        for (let x = 0; x <= W; x += 120) {
+          ceiling.lineTo(x, y + Math.sin((x + i * 70) / 170) * 7);
+        }
+        ceiling.strokePath();
+      }
+      ceiling.lineStyle(1, accent, 0.13);
+      [310, 620, 1180, 1720, 2320].forEach(cx => ceiling.lineBetween(cx, 274, cx + 84, 332));
+
+      [190, 500, 820, 1180, 1600, 2020, 2420].forEach((rx, i) => {
+        const rack = this.add.graphics().setDepth(3);
+        rack.x = rx; rack.y = 552;
+        rack.fillStyle(0x020810, 0.46); rack.fillEllipse(0, 0, 62, 12);
+        this._drawLevel1MetalPanel(rack, -22, -74, 44, 74, { accent, alpha: 0.96 });
+        for (let row = 0; row < 6; row++) {
+          const lit = (row + i) % 2 === 0 || rng() > 0.55;
+          rack.fillStyle(lit ? accent : 0x1e3a5f, lit ? 0.62 : 0.32);
+          rack.fillRect(-15, -66 + row * 10, 30, 5);
+        }
+        rack.fillStyle(i % 3 === 0 ? 0xef4444 : 0x4ade80, 0.9);
+        rack.fillRect(13, -69, 4, 4);
+      });
+
+      [430, 1040, 1360, 1960, 2320, 2640].forEach((lx, i) => {
+        const lampAccent = i % 3 === 0 ? 0xf59e0b : accent;
+        const lamp = this.add.graphics().setDepth(3);
+        lamp.x = lx; lamp.y = 552;
+        lamp.fillStyle(lampAccent, 0.028); lamp.fillRect(-54, -104, 108, 104);
+        lamp.fillStyle(lampAccent, 0.05); lamp.fillEllipse(0, 0, 132, 24);
+        lamp.fillStyle(0x020810, 0.46); lamp.fillEllipse(0, 0, 88, 14);
+        this._drawLevel1MetalPanel(lamp, -5, -88, 10, 88, { accent: lampAccent, alpha: 0.92, led: false });
+        this._drawLevel1MetalPanel(lamp, -18, -100, 36, 14, { accent: lampAccent, alpha: 0.94 });
+        lamp.fillStyle(lampAccent, 0.18); lamp.fillRect(-22, -105, 44, 23);
+        lamp.fillStyle(lampAccent, 0.95); lamp.fillRect(-11, -93, 22, 4);
+        lamp.fillStyle(0xffffff, 0.42); lamp.fillRect(-4, -93, 8, 1);
+        lamp.fillStyle(lampAccent, 0.07); lamp.fillEllipse(0, -48, 82, 94);
+        lamp.fillStyle(lampAccent, 0.16); lamp.fillRect(-34, -1, 68, 2);
+
+        const pulse = this.add.rectangle(lx, 459, 28, 4, lampAccent, 0.38).setDepth(4);
+        this.tweens.add({
+          targets: pulse,
+          alpha: 0.12,
+          scaleX: 1.55,
+          duration: 980 + i * 120,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.InOut',
+        });
+      });
+
+      [[565, 448, 'BORDER'], [1288, 452, 'FEE OK'], [2050, 448, 'CLEAR']].forEach(([gx, gy, label], gateIndex) => {
+        const gate = this.add.graphics().setDepth(4);
+        gate.fillStyle(0x020810, 0.5); gate.fillEllipse(gx, gy + 74, 152, 22);
+        this._drawLevel1MetalPanel(gate, gx - 72, gy + 54, 144, 18, { accent, alpha: 0.42 });
+        this._drawLevel1MetalPanel(gate, gx - 66, gy - 34, 18, 88, { accent, alpha: 0.76, led: false });
+        this._drawLevel1MetalPanel(gate, gx + 48, gy - 34, 18, 88, { accent, alpha: 0.76, led: false });
+        this._drawLevel1MetalPanel(gate, gx - 80, gy - 48, 160, 18, { accent: gateIndex === 1 ? 0xf59e0b : accent, alpha: 0.48 });
+        gate.fillStyle(accent, 0.032); gate.fillRect(gx - 44, gy - 30, 88, 84);
+        gate.lineStyle(1, accent, 0.15); gate.strokeRect(gx - 44, gy - 30, 88, 84);
+        gate.fillStyle(gateIndex === 1 ? 0xf59e0b : 0x4ade80, 0.72); gate.fillRect(gx + 55, gy - 22, 4, 4);
+        gate.fillStyle(accent, 0.18); gate.fillRect(gx - 30, gy + 28, 60, 3);
+        this._addPixelGlow(gx, gy + 20, 88, 10, accent, { depth: 5, alpha: 0.1 });
+        this.add.text(gx, gy - 60, label, {
+          fontFamily: 'monospace', fontSize: '9px', color: '#67e8f9',
+          backgroundColor: 'rgba(2, 8, 16, 0.55)', padding: { x: 4, y: 1 },
+        }).setOrigin(0.5).setDepth(5);
+      });
+
+      [[700, 444, 'SCAN'], [1450, 414, 'AUTH'], [2150, 444, 'LOGS']].forEach(([x, y, label]) => {
+        const panel = this.add.graphics().setDepth(4);
+        this._drawLevel1MetalPanel(panel, x - 58, y - 58, 116, 54, { accent, alpha: 0.92 });
+        panel.fillStyle(accent, 0.12); panel.fillRect(x - 48, y - 50, 96, 34);
+        for (let l = 0; l < 6; l++) {
+          panel.fillStyle(accent, 0.1 + l * 0.015);
+          panel.fillRect(x - 40, y - 44 + l * 5, 70 - l * 6, 2);
+        }
+        this.add.text(x, y - 67, label, {
+          fontFamily: 'monospace', fontSize: '9px', color: '#67e8f9',
+          backgroundColor: 'rgba(2, 8, 16, 0.55)', padding: { x: 4, y: 1 },
+        }).setOrigin(0.5).setDepth(5);
+      });
+
+      const bus = this.add.graphics().setDepth(2);
+      bus.lineStyle(2, 0x1e3a5f, 0.75);
+      [360, 388, 416].forEach(y => bus.lineBetween(0, y, W, y));
+      bus.lineStyle(1, accent, 0.22);
+      for (let x = 80; x < W; x += 180) {
+        bus.lineBetween(x, 360, x + 70, 416);
+        bus.fillStyle(accent, 0.45); bus.fillRect(x + 68, 414, 6, 4);
+      }
+
+      const bridge = this.add.graphics().setDepth(2);
+      [700, 1450, 2150].forEach((cx, i) => {
+        const bridgeAccent = i === 1 ? 0xf59e0b : accent;
+        this._drawLevel1MetalPanel(bridge, cx - 98, i === 1 ? 388 : 418, 196, 18, { accent: bridgeAccent, alpha: 0.34 });
+        bridge.fillStyle(accent, 0.08);
+        bridge.fillRect(cx - 88, (i === 1 ? 406 : 436), 176, 2);
+        bridge.fillStyle(bridgeAccent, 0.18);
+        bridge.fillRect(cx - 74, (i === 1 ? 411 : 441), 44, 3);
+        bridge.fillStyle(0x020810, 0.28);
+        bridge.fillRect(cx + 58, (i === 1 ? 411 : 441), 22, 3);
+      });
+
+      [[318, 'ENTRY'], [870, 'MAX'], [1515, 'O(n²)'], [2225, 'SORT']].forEach(([hx, text], i) => {
+        const holo = this.add.graphics().setDepth(3);
+        holo.x = hx; holo.y = 552;
+        this._drawLevel1MetalPanel(holo, -14, -20, 28, 20, { accent: i === 2 ? 0xf59e0b : accent, alpha: 0.56 });
+        holo.fillStyle(accent, 0.07); holo.fillTriangle(-32, -16, 32, -16, 0, -70);
+        holo.lineStyle(1, accent, 0.26); holo.strokeTriangle(-32, -16, 32, -16, 0, -70);
+        for (let sy = -64; sy < -20; sy += 6) {
+          holo.fillStyle(accent, 0.06);
+          holo.fillRect(-20, sy, 40, 1);
+        }
+        this.add.text(hx, 496, text, {
+          fontFamily: 'monospace', fontSize: '9px', color: i === 2 ? '#fbbf24' : '#67e8f9',
+          backgroundColor: 'rgba(2, 8, 16, 0.44)', padding: { x: 3, y: 1 },
+        }).setOrigin(0.5).setDepth(4);
+      });
+
+      [[375, 514], [1110, 514], [1870, 514], [2520, 514]].forEach(([cx, cy], i) => {
+        const cart = this.add.graphics().setDepth(4);
+        cart.fillStyle(0x020810, 0.42); cart.fillEllipse(cx, cy + 32, 82, 14);
+        this._drawLevel1MetalPanel(cart, cx - 38, cy, 76, 26, { accent: i % 2 ? 0xf59e0b : accent, alpha: 0.52 });
+        cart.fillStyle(0x0f172a, 0.48); cart.fillRect(cx - 25, cy + 8, 18, 9); cart.fillRect(cx + 7, cy + 8, 18, 9);
+        cart.fillStyle(i % 2 ? 0xf59e0b : accent, 0.32); cart.fillRect(cx - 30, cy - 5, 60, 3);
+        cart.fillStyle(0x020810, 0.9); cart.fillRect(cx - 26, cy + 25, 8, 5); cart.fillRect(cx + 18, cy + 25, 8, 5);
+      });
+
+      // Command-center core: a big readable server spine behind the route.
+      [980, 1780].forEach((cx, i) => {
+        const core = this.add.graphics().setDepth(3);
+        this._drawLevel1MetalPanel(core, cx - 44, 282, 88, 142, { accent, alpha: 0.9 });
+        for (let r = 0; r < 7; r++) {
+          core.fillStyle(r % 2 ? 0x1e3a5f : accent, r % 2 ? 0.42 : 0.26);
+          core.fillRect(cx - 32, 296 + r * 16, 64, 7);
+        }
+        this._addPixelGlow(cx, 352, 72, 12, accent, { depth: 5, alpha: 0.24 });
+        this.add.text(cx, 266, i === 0 ? 'DATA CORE' : 'VISA NET', {
+          fontFamily: 'monospace', fontSize: '9px', color: '#67e8f9',
+          backgroundColor: 'rgba(2, 8, 16, 0.58)', padding: { x: 4, y: 1 },
+        }).setOrigin(0.5).setDepth(5);
+      });
+
+      [[1120, 318], [2380, 330]].forEach(([cx, cy], i) => {
+        const globe = this.add.graphics().setDepth(4);
+        this._drawLevel1MetalPanel(globe, cx - 72, cy + 48, 144, 20, { accent, alpha: 0.42 });
+        globe.fillStyle(accent, 0.055); globe.fillCircle(cx, cy, 54);
+        globe.lineStyle(1, accent, 0.32); globe.strokeCircle(cx, cy, 50);
+        globe.lineStyle(1, accent, 0.2);
+        globe.strokeEllipse(cx, cy, 92, 28);
+        globe.strokeEllipse(cx, cy, 38, 92);
+        globe.lineBetween(cx - 42, cy - 16, cx + 38, cy + 18);
+        globe.fillStyle(i ? 0xf59e0b : 0x4ade80, 0.76); globe.fillRect(cx - 4, cy - 4, 8, 8);
+        this._addPixelGlow(cx, cy, 92, 12, accent, { depth: 5, alpha: 0.13 });
+      });
+
+      [300, 760, 1240, 1670, 2100, 2500].forEach((cx, i) => {
+        const cam = this.add.graphics().setDepth(4);
+        this._drawLevel1MetalPanel(cam, cx - 18, 294, 36, 14, { accent: i % 2 ? 0xf59e0b : accent, alpha: 0.76 });
+        cam.lineStyle(1, 0x334155, 0.62); cam.lineBetween(cx, 294, cx, 278);
+        cam.fillStyle(i % 2 ? 0xf59e0b : accent, 0.48);
+        cam.fillTriangle(cx - 14, 308, cx + 14, 308, cx, 338);
+      });
+    }
+    return;
     // Server racks — holographic outlines
     [200, 500, 800, 1200, 1600, 2000, 2400].forEach(rx => {
       const rack = this.add.graphics();
@@ -912,6 +1149,61 @@ export default class GameScene extends Phaser.Scene {
   }
 
   _drawLevel5Props(W, rng) {
+    {
+      const accent = 0x60a5fa;
+      const floor = this.add.graphics().setDepth(1);
+      for (let x = 0; x < W; x += 88) {
+        this._drawLevel1MetalPanel(floor, x, 540, 86, 28, { accent, alpha: 0.45 });
+      }
+      [250, 700, 1150, 1600, 2050, 2500, 2950].forEach((tx, i) => {
+        const term = this.add.graphics().setDepth(3);
+        term.x = tx; term.y = 552;
+        term.fillStyle(0x020810, 0.45); term.fillEllipse(0, 0, 58, 12);
+        this._drawLevel1MetalPanel(term, -20, -62, 40, 62, { accent, alpha: 0.94 });
+        term.fillStyle(accent, 0.13); term.fillRect(-13, -54, 26, 26);
+        term.lineStyle(1, accent, 0.35); term.strokeRect(-13, -54, 26, 26);
+        for (let l = 0; l < 5; l++) {
+          term.fillStyle(accent, 0.12);
+          term.fillRect(-10, -49 + l * 5, 20 - l * 2, 1);
+        }
+        term.fillStyle(i % 2 ? 0xf59e0b : 0x38bdf8, 0.6);
+        term.fillRect(-14, -12, 28, 3);
+      });
+
+      const beams = this.add.graphics().setDepth(2);
+      [500, 1100, 1800, 2400].forEach(bx => {
+        beams.fillStyle(accent, 0.035);
+        beams.fillRect(bx - 5, 0, 10, 552);
+        beams.fillStyle(accent, 0.18);
+        beams.fillRect(bx - 1, 0, 2, 552);
+        this._drawLevel1MetalPanel(beams, bx - 22, 520, 44, 20, { accent, alpha: 0.55 });
+      });
+
+      const arch = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(arch, 2550, 306, 100, 60, { accent, alpha: 0.9 });
+      arch.fillStyle(accent, 0.08); arch.fillRect(2560, 316, 80, 38);
+      arch.lineStyle(1, accent, 0.45); arch.strokeRect(2560, 316, 80, 38);
+      arch.fillStyle(0xf59e0b, 0.5); arch.fillRect(2570, 360, 60, 3);
+
+      // Alien census array: central star-map equipment, very different silhouette from Level 2.
+      [[900, 328, 'SPECIES MAP'], [1900, 328, 'STAR INDEX']].forEach(([cx, cy, label]) => {
+        const map = this.add.graphics().setDepth(4);
+        this._drawLevel1MetalPanel(map, cx - 76, cy - 42, 152, 84, { accent, alpha: 0.86 });
+        map.lineStyle(1, accent, 0.28);
+        const pts = [[cx - 46, cy - 10], [cx - 12, cy - 28], [cx + 28, cy - 4], [cx + 50, cy + 22], [cx - 22, cy + 24]];
+        for (let i = 0; i < pts.length - 1; i++) map.lineBetween(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1]);
+        pts.forEach(([px, py], idx) => {
+          map.fillStyle(idx % 2 ? 0xf59e0b : accent, 0.8);
+          map.fillRect(px - 3, py - 3, 6, 6);
+        });
+        this._addPixelGlow(cx, cy, 120, 10, accent, { depth: 5, alpha: 0.18 });
+        this.add.text(cx, cy - 56, label, {
+          fontFamily: 'monospace', fontSize: '9px', color: '#bfdbfe',
+          backgroundColor: 'rgba(2, 8, 16, 0.58)', padding: { x: 4, y: 1 },
+        }).setOrigin(0.5).setDepth(5);
+      });
+    }
+    return;
     // Census terminal stations — holographic kiosks
     [250, 700, 1150, 1600, 2050, 2500, 2950].forEach(tx => {
       const term = this.add.graphics();
@@ -949,6 +1241,73 @@ export default class GameScene extends Phaser.Scene {
   }
 
   _drawLevel4Props(W, rng) {
+    {
+      const accent = 0xa855f7;
+      const track = this.add.graphics().setDepth(1);
+      track.fillStyle(0x05030f, 0.62); track.fillRect(0, 538, W, 30);
+      track.lineStyle(3, 0x334155, 0.75); track.lineBetween(0, 546, W, 546); track.lineBetween(0, 555, W, 555);
+      track.lineStyle(1, accent, 0.35); track.lineBetween(0, 551, W, 551);
+      for (let x = 0; x < W; x += 72) this._drawLevel1MetalPanel(track, x, 526, 56, 12, { accent, alpha: 0.52 });
+
+      [350, 800, 1300, 1750, 2250].forEach((px, i) => {
+        const marker = this.add.graphics().setDepth(3);
+        marker.x = px; marker.y = 552;
+        this._drawLevel1MetalPanel(marker, -56, -18, 112, 14, { accent, alpha: 0.86 });
+        marker.fillStyle(accent, 0.16); marker.fillEllipse(0, -6, 136, 20);
+        marker.fillStyle(0xf59e0b, 0.45); marker.fillRect(-42, -23, 32, 3);
+        marker.fillStyle(i % 2 ? 0x38bdf8 : accent, 0.5); marker.fillRect(14, -23, 34, 3);
+      });
+
+      [[700, 424, 'ROUTE'], [1450, 394, 'DFS'], [2100, 424, 'BFS']].forEach(([mx, my, label]) => {
+        const board = this.add.graphics().setDepth(4);
+        this._drawLevel1MetalPanel(board, mx - 54, my - 46, 108, 42, { accent, alpha: 0.92 });
+        for (let l = 0; l < 5; l++) {
+          board.fillStyle(accent, 0.11);
+          board.fillRect(mx - 42, my - 38 + l * 7, 78 - l * 5, 2);
+        }
+        this.add.text(mx, my - 56, label, {
+          fontFamily: 'monospace', fontSize: '9px', color: '#d8b4fe',
+          backgroundColor: 'rgba(10, 3, 22, 0.55)', padding: { x: 4, y: 1 },
+        }).setOrigin(0.5).setDepth(5);
+      });
+
+      [250, 750, 1200, 1700, 2300].forEach(px => {
+        const sign = this.add.graphics().setDepth(3);
+        sign.x = px; sign.y = 552;
+        this._drawLevel1MetalPanel(sign, -4, -88, 8, 88, { accent, alpha: 0.9, led: false });
+        this._drawLevel1MetalPanel(sign, -26, -96, 52, 26, { accent, alpha: 0.88 });
+        sign.fillStyle(0xf59e0b, 0.42); sign.fillRect(-18, -88, 36, 3);
+      });
+
+      const train = this.add.graphics().setDepth(3);
+      this._drawLevel1MetalPanel(train, 272, 474, 452, 46, { accent, alpha: 0.74 });
+      train.fillStyle(0x05030f, 0.82); train.fillRect(292, 486, 412, 20);
+      train.fillStyle(accent, 0.18); train.fillRect(302, 492, 392, 4);
+      for (let i = 0; i < 7; i++) {
+        train.fillStyle(i % 2 ? 0xa855f7 : 0xf59e0b, 0.48);
+        train.fillRect(326 + i * 52, 489, 28, 8);
+      }
+      this._addPixelGlow(500, 504, 380, 10, accent, { depth: 4, alpha: 0.2 });
+
+      const gate = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(gate, 1328, 284, 244, 92, { accent, alpha: 0.8 });
+      gate.fillStyle(accent, 0.09); gate.fillRect(1346, 302, 208, 54);
+      gate.lineStyle(1, accent, 0.38);
+      gate.lineBetween(1370, 342, 1400, 318);
+      gate.lineBetween(1400, 318, 1442, 350);
+      gate.lineBetween(1442, 350, 1494, 314);
+      gate.lineBetween(1494, 314, 1532, 344);
+      [1370, 1400, 1442, 1494, 1532].forEach((nx, i) => {
+        gate.fillStyle(i % 2 ? 0xf59e0b : accent, 0.78);
+        gate.fillRect(nx - 3, (i % 2 ? 318 : 342) - 3, 6, 6);
+      });
+      this._addPixelGlow(1450, 330, 184, 12, accent, { depth: 5, alpha: 0.22 });
+      this.add.text(1450, 270, 'HYPER ROUTE', {
+        fontFamily: 'monospace', fontSize: '9px', color: '#d8b4fe',
+        backgroundColor: 'rgba(10, 3, 22, 0.58)', padding: { x: 4, y: 1 },
+      }).setOrigin(0.5).setDepth(5);
+    }
+    return;
     // Train tracks — subtle rail glow
     const track = this.add.graphics();
     track.lineStyle(2, 0x334155, 0.3);
@@ -1002,6 +1361,76 @@ export default class GameScene extends Phaser.Scene {
   }
 
   _drawLevel3Props(W, rng) {
+    {
+      const accent = 0x22c55e;
+      const floor = this.add.graphics().setDepth(1);
+      for (let x = 0; x < W; x += 82) this._drawLevel1MetalPanel(floor, x, 540, 80, 28, { accent, alpha: 0.46 });
+
+      [300, 650, 1050, 1550, 1900, 2300].forEach((bx, i) => {
+        const bench = this.add.graphics().setDepth(3);
+        bench.x = bx; bench.y = 552;
+        bench.fillStyle(0x020810, 0.45); bench.fillEllipse(0, 0, 112, 14);
+        this._drawLevel1MetalPanel(bench, -54, -24, 108, 24, { accent, alpha: 0.92 });
+        for (let d = 0; d < 3; d++) {
+          const jx = -30 + d * 30;
+          bench.fillStyle(accent, 0.12); bench.fillRect(jx - 9, -48, 18, 24);
+          bench.lineStyle(1, accent, 0.42); bench.strokeRect(jx - 9, -48, 18, 24);
+          bench.fillStyle(0x86efac, 0.42); bench.fillRect(jx - 5, -38, 10, 8);
+          bench.fillStyle(0xffffff, 0.2); bench.fillRect(jx - 6, -46, 3, 18);
+        }
+        bench.fillStyle(i % 2 ? 0x38bdf8 : accent, 0.36); bench.fillRect(-42, -31, 84, 2);
+      });
+
+      [150, 550, 1000, 1400, 1800, 2250].forEach(hx => {
+        const helix = this.add.graphics().setDepth(2);
+        helix.x = hx; helix.y = 438;
+        this._drawLevel1MetalPanel(helix, -22, 76, 44, 16, { accent, alpha: 0.55 });
+        for (let y = 0; y < 7; y++) {
+          const wave = Math.sin(y * 1.15) * 10;
+          helix.fillStyle(accent, 0.34); helix.fillRect(wave - 2, y * 13, 4, 4);
+          helix.fillStyle(0x86efac, 0.24); helix.fillRect(-wave - 2, y * 13, 4, 4);
+          if (y < 6) {
+            helix.lineStyle(1, accent, 0.18);
+            helix.lineBetween(wave, y * 13 + 2, -wave, (y + 1) * 13 + 2);
+          }
+        }
+      });
+
+      const arch = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(arch, 1394, 326, 112, 60, { accent, alpha: 0.88 });
+      arch.fillStyle(accent, 0.08); arch.fillRect(1404, 336, 92, 40);
+      arch.lineStyle(1, accent, 0.5); arch.strokeRect(1404, 336, 92, 40);
+      arch.fillStyle(0x86efac, 0.34); arch.fillRect(1422, 354, 56, 3);
+
+      [[760, 362, 'GENOME VAT'], [1800, 362, 'BIO LOCK']].forEach(([cx, cy, label], i) => {
+        const tank = this.add.graphics().setDepth(4);
+        this._drawLevel1MetalPanel(tank, cx - 52, cy - 82, 104, 124, { accent, alpha: 0.86 });
+        tank.fillStyle(0x052e16, 0.6); tank.fillRect(cx - 34, cy - 66, 68, 82);
+        tank.lineStyle(1, 0x86efac, 0.48); tank.strokeRect(cx - 34, cy - 66, 68, 82);
+        tank.fillStyle(0x86efac, 0.1); tank.fillRect(cx - 30, cy - 58, 60, 66);
+        for (let b = 0; b < 8; b++) {
+          tank.fillStyle(b % 2 ? accent : 0x86efac, 0.28);
+          tank.fillRect(cx - 22 + (b * 13) % 46, cy - 50 + b * 8, 4, 4);
+        }
+        tank.fillStyle(i ? 0x38bdf8 : accent, 0.5);
+        tank.fillRect(cx - 42, cy + 26, 84, 4);
+        this._addPixelGlow(cx, cy - 20, 76, 14, 0x86efac, { depth: 5, alpha: 0.18 });
+        this.add.text(cx, cy - 98, label, {
+          fontFamily: 'monospace', fontSize: '9px', color: '#bbf7d0',
+          backgroundColor: 'rgba(2, 16, 8, 0.58)', padding: { x: 4, y: 1 },
+        }).setOrigin(0.5).setDepth(5);
+      });
+
+      const scanner = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(scanner, 2328, 330, 148, 74, { accent, alpha: 0.88 });
+      scanner.fillStyle(accent, 0.1); scanner.fillRect(2342, 344, 120, 40);
+      for (let i = 0; i < 6; i++) {
+        scanner.fillStyle(i % 2 ? 0x86efac : accent, 0.34);
+        scanner.fillRect(2352 + i * 17, 354 + (i % 3) * 5, 10, 3);
+      }
+      this._addPixelGlow(2402, 366, 118, 9, accent, { depth: 5, alpha: 0.2 });
+    }
+    return;
     // Lab bench counters — holographic
     [300, 650, 1050, 1550, 1900, 2300].forEach(bx => {
       const bench = this.add.graphics();
@@ -1052,6 +1481,70 @@ export default class GameScene extends Phaser.Scene {
   }
 
   _drawLevel6Props(W, rng) {
+    {
+      const accent = 0x7c3aed;
+      const floor = this.add.graphics().setDepth(1);
+      for (let x = 0; x < W; x += 88) this._drawLevel1MetalPanel(floor, x, 540, 86, 28, { accent, alpha: 0.44 });
+
+      [180, 420, 820, 1200, 1700, 2200, 2480].forEach((cx, i) => {
+        const crate = this.add.graphics().setDepth(3);
+        crate.x = cx; crate.y = 552;
+        const crateAccent = [0x7c3aed, 0x38bdf8, 0xf59e0b][i % 3];
+        crate.fillStyle(0x020810, 0.45); crate.fillEllipse(0, 0, 72, 14);
+        this._drawLevel1MetalPanel(crate, -34, -52, 68, 52, { accent: crateAccent, alpha: 0.92 });
+        crate.fillStyle(crateAccent, 0.22); crate.fillRect(-30, -29, 60, 8);
+        crate.fillStyle(0x0f172a, 0.65); crate.fillRect(-22, -44, 12, 10); crate.fillRect(10, -44, 12, 10);
+      });
+
+      [500, 1050, 1600, 2300].forEach((gx, i) => {
+        const ring = this.add.graphics().setDepth(2);
+        ring.x = gx; ring.y = 552;
+        this._drawLevel1MetalPanel(ring, -30, -14, 60, 14, { accent, alpha: 0.72 });
+        ring.lineStyle(2, accent, 0.28);
+        ring.strokeEllipse(0, -8, 86, 18);
+        ring.lineStyle(1, 0x38bdf8, 0.2);
+        ring.strokeEllipse(0, -8, 60, 12);
+      });
+
+      const med = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(med, 636, 334, 128, 68, { accent: 0xef4444, alpha: 0.9 });
+      med.fillStyle(0xef4444, 0.45); med.fillRect(692, 352, 16, 6); med.fillRect(697, 347, 6, 16);
+      med.fillStyle(0xef4444, 0.1); med.fillRect(646, 376, 108, 12);
+
+      const manifest = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(manifest, 2036, 334, 128, 68, { accent: 0x38bdf8, alpha: 0.9 });
+      for (let r = 0; r < 4; r++) {
+        manifest.fillStyle(0x38bdf8, 0.13 + r * 0.02);
+        manifest.fillRect(2048, 348 + r * 12, 80 - r * 8, 5);
+      }
+
+      const dp = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(dp, 1388, 318, 124, 58, { accent, alpha: 0.9 });
+      for (let c = 0; c < 5; c++) {
+        dp.fillStyle(accent, 0.12); dp.fillRect(1400 + c * 19, 334, 14, 26);
+      }
+
+      const crane = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(crane, 908, 268, 300, 22, { accent: 0xf59e0b, alpha: 0.82 });
+      this._drawLevel1MetalPanel(crane, 930, 290, 18, 154, { accent: 0xf59e0b, alpha: 0.82, led: false });
+      crane.lineStyle(1, 0xf59e0b, 0.32);
+      for (let x = 936; x < 1180; x += 34) {
+        crane.lineBetween(x, 274, x + 28, 288);
+        crane.lineBetween(x + 28, 274, x, 288);
+      }
+      crane.lineStyle(2, 0x38bdf8, 0.26);
+      crane.lineBetween(1110, 290, 1110, 402);
+      this._drawLevel1MetalPanel(crane, 1074, 402, 72, 30, { accent: 0x38bdf8, alpha: 0.84 });
+      this._addPixelGlow(1110, 416, 64, 11, 0x38bdf8, { depth: 5, alpha: 0.2 });
+
+      const airlock = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(airlock, 2260, 296, 154, 104, { accent, alpha: 0.82 });
+      airlock.fillStyle(0x16072f, 0.7); airlock.fillRect(2284, 316, 106, 64);
+      airlock.lineStyle(1, accent, 0.38); airlock.strokeRect(2284, 316, 106, 64);
+      airlock.fillStyle(0xf59e0b, 0.48); airlock.fillRect(2298, 386, 78, 4);
+      this._addPixelGlow(2337, 346, 94, 12, accent, { depth: 5, alpha: 0.18 });
+    }
+    return;
     // Cargo containers — holographic
     [180, 420, 820, 1200, 1700, 2200, 2480].forEach((cx, i) => {
       const cg = this.add.graphics();
@@ -1118,6 +1611,72 @@ export default class GameScene extends Phaser.Scene {
   }
 
   _drawLevel7Props(W, rng) {
+    {
+      const accent = 0x38bdf8;
+      const floor = this.add.graphics().setDepth(1);
+      for (let x = 0; x < W; x += 84) this._drawLevel1MetalPanel(floor, x, 540, 82, 28, { accent, alpha: 0.42 });
+
+      [280, 680, 1100, 1680, 2280].forEach((tx, i) => {
+        const tower = this.add.graphics().setDepth(3);
+        tower.x = tx; tower.y = 552;
+        tower.fillStyle(0x020810, 0.45); tower.fillEllipse(0, 0, 72, 14);
+        this._drawLevel1MetalPanel(tower, -7, -124, 14, 124, { accent, alpha: 0.9, led: false });
+        this._drawLevel1MetalPanel(tower, -30, -84, 60, 12, { accent, alpha: 0.76 });
+        tower.lineStyle(1, accent, 0.28);
+        tower.lineBetween(-24, -72, 0, -120); tower.lineBetween(24, -72, 0, -120);
+        tower.fillStyle(accent, 0.16); tower.fillEllipse(0, -132, 36, 14);
+        tower.lineStyle(1, accent, 0.55); tower.strokeEllipse(0, -132, 36, 14);
+        tower.fillStyle(i % 2 ? 0xf59e0b : 0xef4444, 0.75); tower.fillRect(-2, -142, 4, 4);
+      });
+
+      [480, 980, 1580, 2080].forEach(rx => {
+        const rack = this.add.graphics().setDepth(3);
+        rack.x = rx; rack.y = 552;
+        this._drawLevel1MetalPanel(rack, -28, -54, 56, 54, { accent, alpha: 0.88 });
+        for (let r = 0; r < 4; r++) {
+          rack.fillStyle(accent, 0.16 + r * 0.03);
+          rack.fillRect(-19, -45 + r * 10, 38, 5);
+        }
+      });
+
+      const cable = this.add.graphics().setDepth(2);
+      cable.lineStyle(1, accent, 0.22);
+      [[280, 680], [680, 1100], [1100, 1680], [1680, 2280]].forEach(([a, b]) => {
+        cable.lineBetween(a, 430, b, 390);
+        cable.fillStyle(accent, 0.32); cable.fillRect((a + b) / 2, 408, 5, 5);
+      });
+
+      const mst = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(mst, 636, 332, 128, 66, { accent, alpha: 0.9 });
+      mst.fillStyle(accent, 0.12); mst.fillRect(650, 344, 100, 36);
+      const dj = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(dj, 1386, 292, 128, 66, { accent: 0xf59e0b, alpha: 0.9 });
+      dj.fillStyle(0xf59e0b, 0.12); dj.fillRect(1400, 304, 100, 36);
+
+      const hub = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(hub, 1776, 314, 160, 88, { accent, alpha: 0.88 });
+      hub.fillStyle(0x052033, 0.72); hub.fillRect(1794, 332, 124, 48);
+      hub.lineStyle(1, accent, 0.34);
+      [[1820, 356], [1856, 340], [1884, 366], [1910, 348]].forEach(([nx, ny], i, arr) => {
+        if (i > 0) hub.lineBetween(arr[i - 1][0], arr[i - 1][1], nx, ny);
+        hub.fillStyle(i % 2 ? 0xf59e0b : accent, 0.82);
+        hub.fillRect(nx - 4, ny - 4, 8, 8);
+      });
+      this._addPixelGlow(1856, 356, 118, 12, accent, { depth: 5, alpha: 0.18 });
+      this.add.text(1856, 300, 'ROUTING HUB', {
+        fontFamily: 'monospace', fontSize: '9px', color: '#bae6fd',
+        backgroundColor: 'rgba(2, 8, 16, 0.58)', padding: { x: 4, y: 1 },
+      }).setOrigin(0.5).setDepth(5);
+
+      const dish = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(dish, 2468, 446, 86, 24, { accent: 0xf59e0b, alpha: 0.8 });
+      dish.lineStyle(2, 0xf59e0b, 0.36);
+      dish.strokeEllipse(2511, 420, 82, 28);
+      dish.lineStyle(1, accent, 0.22);
+      dish.strokeEllipse(2511, 420, 118, 42);
+      this._addPixelGlow(2511, 420, 80, 10, 0xf59e0b, { depth: 5, alpha: 0.16 });
+    }
+    return;
     // Communication towers — holographic lattice
     [280, 680, 1100, 1680, 2280].forEach(tx => {
       const tower = this.add.graphics();
@@ -1168,6 +1727,77 @@ export default class GameScene extends Phaser.Scene {
   }
 
   _drawLevel8Props(W, rng) {
+    {
+      const accent = 0xa855f7;
+      const floor = this.add.graphics().setDepth(1);
+      for (let x = 0; x < W; x += 88) this._drawLevel1MetalPanel(floor, x, 540, 86, 28, { accent, alpha: 0.44 });
+
+      [400, 900, 1500, 2200, 2900].forEach(ex => {
+        const col = this.add.graphics().setDepth(2);
+        col.fillStyle(accent, 0.035); col.fillRect(ex - 8, 0, 16, 552);
+        col.fillStyle(accent, 0.18); col.fillRect(ex - 1, 0, 2, 552);
+        this._drawLevel1MetalPanel(col, ex - 24, 520, 48, 22, { accent, alpha: 0.66 });
+      });
+
+      const chess = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(chess, 626, 336, 84, 84, { accent: 0xfbbf24, alpha: 0.86 });
+      const cs = 16;
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          chess.fillStyle((r + c) % 2 === 0 ? 0x334155 : 0x0f172a, 0.8);
+          chess.fillRect(636 + c * cs, 346 + r * cs, cs, cs);
+        }
+      }
+
+      const doorColors = [0x22c55e, 0xfbbf24, 0xef4444];
+      doorColors.forEach((col, i) => {
+        const dx = 1288 + i * 58;
+        const door = this.add.graphics().setDepth(4);
+        this._drawLevel1MetalPanel(door, dx, 302, 50, 68, { accent: col, alpha: 0.88 });
+        door.fillStyle(col, 0.12); door.fillRect(dx + 8, 312, 34, 46);
+        door.fillStyle(col, 0.55); door.fillRect(dx + 12, 362, 26, 3);
+      });
+
+      const pad = this.add.graphics().setDepth(3);
+      this._drawLevel1MetalPanel(pad, 3088, 524, 224, 24, { accent: 0x4ade80, alpha: 0.85 });
+      pad.fillStyle(0x4ade80, 0.08); pad.fillEllipse(3200, 536, 260, 34);
+      pad.lineStyle(2, 0x4ade80, 0.28); pad.strokeEllipse(3200, 536, 220, 26);
+
+      const ship = this.add.graphics().setDepth(4);
+      ship.fillStyle(0x0f172a, 0.86); ship.fillTriangle(3200, 424, 3168, 502, 3232, 502);
+      ship.lineStyle(1, 0x38bdf8, 0.42); ship.strokeTriangle(3200, 424, 3168, 502, 3232, 502);
+      ship.fillStyle(0x38bdf8, 0.22); ship.fillRect(3194, 470, 12, 18);
+      ship.fillStyle(0xf59e0b, 0.34); ship.fillRect(3182, 502, 36, 4);
+
+      const comp = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(comp, 1332, 292, 136, 66, { accent, alpha: 0.9 });
+      comp.fillStyle(accent, 0.1); comp.fillRect(1346, 306, 108, 38);
+
+      const reactor = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(reactor, 1842, 284, 176, 118, { accent, alpha: 0.86 });
+      reactor.fillStyle(0x170b2e, 0.74); reactor.fillRect(1864, 308, 132, 66);
+      reactor.lineStyle(1, accent, 0.42); reactor.strokeRect(1864, 308, 132, 66);
+      reactor.lineStyle(1, 0x38bdf8, 0.28);
+      reactor.lineBetween(1880, 356, 1920, 324);
+      reactor.lineBetween(1920, 324, 1958, 362);
+      reactor.lineBetween(1958, 362, 1984, 334);
+      [1880, 1920, 1958, 1984].forEach((nx, i) => {
+        reactor.fillStyle(i % 2 ? 0xf59e0b : 0x38bdf8, 0.82);
+        reactor.fillRect(nx - 4, (i % 2 ? 324 : 356) - 4, 8, 8);
+      });
+      this._addPixelGlow(1930, 342, 128, 14, accent, { depth: 5, alpha: 0.2 });
+
+      const gantry = this.add.graphics().setDepth(4);
+      this._drawLevel1MetalPanel(gantry, 3138, 324, 24, 196, { accent: 0x4ade80, alpha: 0.8, led: false });
+      this._drawLevel1MetalPanel(gantry, 3238, 324, 24, 196, { accent: 0x4ade80, alpha: 0.8, led: false });
+      gantry.lineStyle(1, 0x4ade80, 0.28);
+      for (let y = 340; y < 506; y += 28) {
+        gantry.lineBetween(3162, y, 3238, y + 18);
+        gantry.lineBetween(3238, y, 3162, y + 18);
+      }
+      this._addPixelGlow(3200, 504, 150, 10, 0x4ade80, { depth: 5, alpha: 0.18 });
+    }
+    return;
     // Energy columns — very subtle vertical beams
     [400, 900, 1500, 2200, 2900].forEach(ex => {
       const eg = this.add.graphics();

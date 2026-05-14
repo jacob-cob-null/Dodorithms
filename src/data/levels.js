@@ -113,9 +113,9 @@ export const LEVELS = [
     playerStart: { x: 120, y: 450 },
 
     // Ground surface y=552. Platforms surface = platform_y - 8.
-    // Plat A: x=700,  y=430 → surface=422 → obstacle y≈408
-    // Plat B: x=1450, y=390 → surface=382 → obstacle y≈368
-    // Plat C: x=2150, y=430 → surface=422 → obstacle y≈408
+    // Plat A: x=700,  y=450 -> surface=442 -> NPC center y=406
+    // Plat B: x=1450, y=420 -> surface=412 -> object center y=398
+    // Plat C: x=2150, y=450 -> surface=442 -> NPC center y=406
     platforms: [
       { x: 1400, y: 568, scaleX: 43.75, scaleY: 2 }, // ground
       { x: 700,  y: 450, scaleX: 4,     scaleY: 1 }, // A
@@ -133,7 +133,7 @@ export const LEVELS = [
       {
         // Ground — intro near start
         id: 'l2-intro',
-        x: 350, y: 524,
+        x: 350, y: 516,
         objectType: 'npc',
         texture: 'npc_trizy',
         speaker: 'Trizy',
@@ -146,7 +146,7 @@ export const LEVELS = [
       {
         // ON Platform A (surface=422) — first jump
         id: 'l2-fraud',
-        x: 700, y: 428,
+        x: 700, y: 406,
         objectType: 'interactable',
         texture: 'npc_trizy',
         speaker: 'Trizy',
@@ -160,7 +160,7 @@ export const LEVELS = [
       {
         // Ground — after jumping back down
         id: 'l2-skies',
-        x: 1100, y: 524,
+        x: 1100, y: 516,
         objectType: 'interactable',
         texture: 'npc_trizy',
         speaker: 'Trizy',
@@ -174,7 +174,7 @@ export const LEVELS = [
       {
         // ON Platform B (surface=382) — higher climb
         id: 'l2-guest-list',
-        x: 1450, y: 388,
+        x: 1450, y: 398,
         objectType: 'interactable',
         texture: 'interactable',
         speaker: 'Trizy',
@@ -188,7 +188,7 @@ export const LEVELS = [
       {
         // ON Platform C (surface=422) — final climb
         id: 'l2-tour',
-        x: 2150, y: 428,
+        x: 2150, y: 406,
         objectType: 'interactable',
         texture: 'npc_trizy',
         speaker: 'Trizy',
@@ -202,7 +202,7 @@ export const LEVELS = [
       {
         // Ground — before exit
         id: 'l2-prof-andrew',
-        x: 2500, y: 524,
+        x: 2500, y: 516,
         objectType: 'npc',
         texture: 'npc_professor',
         speaker: 'Prof. Andrew',
