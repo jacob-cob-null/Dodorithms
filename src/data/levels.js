@@ -5,6 +5,7 @@ export const LEVELS = [
     id: 'level1',
     name: 'Level 1: The Arrival',
     subtitle: 'Guide: Laurenze',
+    location: 'Neo-Manila Arrival District',
     worldWidth: 2600,
     bgColor: '#060d17',
     playerStart: { x: 120, y: 450 },
@@ -108,6 +109,7 @@ export const LEVELS = [
     id: 'level2',
     name: 'Level 2: The Command Center',
     subtitle: 'Guide: Trizy',
+    location: 'Earth Systems Command Center',
     worldWidth: 2800,
     bgColor: '#0a1628',
     playerStart: { x: 120, y: 450 },
@@ -146,7 +148,7 @@ export const LEVELS = [
       {
         // ON Platform A (surface=422) — first jump
         id: 'l2-fraud',
-        x: 700, y: 406,
+        x: 700, y: 412,
         objectType: 'interactable',
         texture: 'npc_trizy',
         speaker: 'Trizy',
@@ -223,6 +225,7 @@ export const LEVELS = [
     id: 'level3',
     name: 'Level 3: The Bio-Research Wing',
     subtitle: 'Guide: Jacob',
+    location: 'Bio-Research Wing',
     worldWidth: 2800,
     bgColor: '#061a0a',
     playerStart: { x: 120, y: 450 },
@@ -248,7 +251,7 @@ export const LEVELS = [
       {
         // Ground — Jacob intro near start
         id: 'l3-intro',
-        x: 350, y: 524,
+        x: 350, y: 516,
         objectType: 'npc',
         texture: 'npc_jacob',
         speaker: 'Jacob',
@@ -262,7 +265,7 @@ export const LEVELS = [
       {
         // ON Platform A — Selection Sort
         id: 'l3-selection',
-        x: 700, y: 428,
+        x: 700, y: 412,
         objectType: 'interactable',
         texture: 'npc_jacob',
         speaker: 'Jacob',
@@ -276,7 +279,7 @@ export const LEVELS = [
       {
         // Ground — Bubble Sort
         id: 'l3-bubble',
-        x: 1100, y: 524,
+        x: 1100, y: 516,
         objectType: 'interactable',
         texture: 'npc_jacob',
         speaker: 'Jacob',
@@ -290,7 +293,7 @@ export const LEVELS = [
       {
         // ON Platform B (higher) — BiologicalClearance featured minigame
         id: 'l3-bio-clearance',
-        x: 1450, y: 388,
+        x: 1450, y: 382,
         objectType: 'interactable',
         texture: 'npc_jacob',
         speaker: 'Jacob',
@@ -304,7 +307,7 @@ export const LEVELS = [
       {
         // ON Platform C — Prof. Andrew closing
         id: 'l3-prof-andrew',
-        x: 2100, y: 428,
+        x: 2100, y: 412,
         objectType: 'npc',
         texture: 'npc_professor',
         speaker: 'Prof. Andrew',
@@ -325,6 +328,7 @@ export const LEVELS = [
     id: 'level4',
     name: 'Level 4: The HyperTrain Terminal',
     subtitle: 'Guide: Kyla',
+    location: 'HyperTrain Terminal',
     worldWidth: 2800,
     bgColor: '#0d0a1f',
     playerStart: { x: 120, y: 450 },
@@ -345,7 +349,7 @@ export const LEVELS = [
     obstacles: [
       {
         id: 'l4-intro',
-        x: 350, y: 524,
+        x: 350, y: 516,
         objectType: 'npc',
         texture: 'npc_kyla',
         speaker: 'Kyla',
@@ -358,7 +362,7 @@ export const LEVELS = [
       },
       {
         id: 'l4-insertion',
-        x: 700, y: 428,
+        x: 700, y: 412,
         objectType: 'interactable',
         texture: 'npc_kyla',
         speaker: 'Kyla',
@@ -371,7 +375,7 @@ export const LEVELS = [
       },
       {
         id: 'l4-dfs',
-        x: 1100, y: 524,
+        x: 1100, y: 516,
         objectType: 'interactable',
         texture: 'npc_kyla',
         speaker: 'Kyla',
@@ -384,7 +388,7 @@ export const LEVELS = [
       },
       {
         id: 'l4-hypertrain',
-        x: 1450, y: 388,
+        x: 1450, y: 382,
         objectType: 'interactable',
         texture: 'npc_kyla',
         speaker: 'Kyla',
@@ -397,7 +401,7 @@ export const LEVELS = [
       },
       {
         id: 'l4-prof-andrew',
-        x: 2100, y: 428,
+        x: 2100, y: 412,
         objectType: 'npc',
         texture: 'npc_professor',
         speaker: 'Prof. Andrew',
@@ -418,6 +422,7 @@ export const LEVELS = [
     id: 'level5',
     name: 'Level 5: The Intergalactic Census',
     subtitle: 'Guides: All',
+    location: 'Intergalactic Census Bureau',
     worldWidth: 3200,
     bgColor: '#050b18',
     playerStart: { x: 120, y: 450 },
@@ -443,7 +448,7 @@ export const LEVELS = [
     obstacles: [
       {
         id: 'l5-intro',
-        x: 350, y: 524,
+        x: 350, y: 516,
         objectType: 'npc',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -456,7 +461,7 @@ export const LEVELS = [
       },
       {
         id: 'l5-binary',
-        x: 650, y: 428,
+        x: 650, y: 412,
         objectType: 'interactable',
         texture: 'npc_trizy',
         speaker: 'Trizy',
@@ -469,7 +474,7 @@ export const LEVELS = [
       },
       {
         id: 'l5-interpolation',
-        x: 1300, y: 388,
+        x: 1300, y: 382,
         objectType: 'interactable',
         texture: 'npc_jacob',
         speaker: 'Jacob',
@@ -482,7 +487,7 @@ export const LEVELS = [
       },
       {
         id: 'l5-quicksort',
-        x: 1950, y: 428,
+        x: 1950, y: 412,
         objectType: 'interactable',
         texture: 'npc_kyla',
         speaker: 'Kyla',
@@ -495,7 +500,7 @@ export const LEVELS = [
       },
       {
         id: 'l5-census',
-        x: 2600, y: 388,
+        x: 2600, y: 382,
         objectType: 'interactable',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -508,7 +513,7 @@ export const LEVELS = [
       },
       {
         id: 'l5-prof-andrew',
-        x: 2950, y: 524,
+        x: 2950, y: 516,
         objectType: 'npc',
         texture: 'npc_professor',
         speaker: 'Prof. Andrew',
@@ -529,6 +534,7 @@ export const LEVELS = [
     id: 'level6',
     name: 'Level 6: The Orbital Station',
     subtitle: 'Guides: All',
+    location: 'Orbital Logistics Station',
     worldWidth: 2800,
     bgColor: '#100518',
     playerStart: { x: 120, y: 450 },
@@ -552,7 +558,7 @@ export const LEVELS = [
     obstacles: [
       {
         id: 'l6-intro',
-        x: 350, y: 524,
+        x: 350, y: 516,
         objectType: 'npc',
         texture: 'npc_trizy',
         speaker: 'Trizy',
@@ -566,7 +572,7 @@ export const LEVELS = [
       {
         // ON Platform A — HeapPriority
         id: 'l6-heap',
-        x: 700, y: 428,
+        x: 700, y: 412,
         objectType: 'interactable',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -580,7 +586,7 @@ export const LEVELS = [
       {
         // Ground — PreSort
         id: 'l6-presort',
-        x: 1100, y: 524,
+        x: 1100, y: 516,
         objectType: 'interactable',
         texture: 'npc_jacob',
         speaker: 'Jacob',
@@ -594,7 +600,7 @@ export const LEVELS = [
       {
         // ON Platform B — ChangeMaking
         id: 'l6-change',
-        x: 1450, y: 388,
+        x: 1450, y: 382,
         objectType: 'interactable',
         texture: 'npc_kyla',
         speaker: 'Kyla',
@@ -608,7 +614,7 @@ export const LEVELS = [
       {
         // ON Platform C — CargoGrid (featured)
         id: 'l6-cargo',
-        x: 2100, y: 428,
+        x: 2100, y: 412,
         objectType: 'interactable',
         texture: 'npc_trizy',
         speaker: 'Trizy',
@@ -622,7 +628,7 @@ export const LEVELS = [
       {
         // Ground — Prof. Andrew closing
         id: 'l6-prof-andrew',
-        x: 2550, y: 524,
+        x: 2550, y: 516,
         objectType: 'npc',
         texture: 'npc_professor',
         speaker: 'Prof. Andrew',
@@ -643,6 +649,7 @@ export const LEVELS = [
     id: 'level7',
     name: 'Level 7: The Network Grid',
     subtitle: 'Guides: Laurenze & Kyla',
+    location: 'Launch Network Grid',
     worldWidth: 2800,
     bgColor: '#081020',
     playerStart: { x: 120, y: 450 },
@@ -666,7 +673,7 @@ export const LEVELS = [
     obstacles: [
       {
         id: 'l7-intro',
-        x: 350, y: 524,
+        x: 350, y: 516,
         objectType: 'npc',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -680,7 +687,7 @@ export const LEVELS = [
       {
         // ON Platform A — SpanningTree (Kruskal's)
         id: 'l7-spanning',
-        x: 700, y: 428,
+        x: 700, y: 412,
         objectType: 'interactable',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -694,7 +701,7 @@ export const LEVELS = [
       {
         // Ground — HuffmanCode
         id: 'l7-huffman',
-        x: 1100, y: 524,
+        x: 1100, y: 516,
         objectType: 'interactable',
         texture: 'npc_kyla',
         speaker: 'Kyla',
@@ -708,7 +715,7 @@ export const LEVELS = [
       {
         // ON Platform B (featured) — ServerRouting (Dijkstra's)
         id: 'l7-routing',
-        x: 1450, y: 388,
+        x: 1450, y: 382,
         objectType: 'interactable',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -722,7 +729,7 @@ export const LEVELS = [
       {
         // Ground — Prof. Andrew closing
         id: 'l7-prof-andrew',
-        x: 2200, y: 524,
+        x: 2200, y: 516,
         objectType: 'npc',
         texture: 'npc_professor',
         speaker: 'Prof. Andrew',
@@ -743,6 +750,7 @@ export const LEVELS = [
     id: 'level8',
     name: 'Level 8: The Final Algorithmic Trial',
     subtitle: 'All Guides',
+    location: 'Final Trial Chamber',
     worldWidth: 3400,
     bgColor: '#0a0a1a',
     playerStart: { x: 120, y: 450 },
@@ -765,7 +773,7 @@ export const LEVELS = [
     obstacles: [
       {
         id: 'l8-intro',
-        x: 300, y: 524,
+        x: 300, y: 516,
         objectType: 'npc',
         texture: 'npc_professor',
         speaker: 'Prof. Andrew',
@@ -778,7 +786,7 @@ export const LEVELS = [
       },
       {
         id: 'l8-intro-guides',
-        x: 500, y: 524,
+        x: 500, y: 516,
         objectType: 'npc',
         texture: 'npc_laurenze',
         speaker: 'Laurenze',
@@ -793,7 +801,7 @@ export const LEVELS = [
       {
         // ON Platform A — QueenGrid (Backtracking)
         id: 'l8-queens',
-        x: 700, y: 428,
+        x: 700, y: 412,
         objectType: 'interactable',
         texture: 'npc_jacob',
         speaker: 'Jacob',
@@ -807,7 +815,7 @@ export const LEVELS = [
       {
         // Ground — RouteOptimizer (Branch-and-Bound)
         id: 'l8-bnb',
-        x: 1100, y: 524,
+        x: 1100, y: 516,
         objectType: 'interactable',
         texture: 'npc_trizy',
         speaker: 'Trizy',
@@ -821,7 +829,7 @@ export const LEVELS = [
       {
         // ON Platform B (featured) — ComplexityGate
         id: 'l8-complexity',
-        x: 1400, y: 388,
+        x: 1400, y: 382,
         objectType: 'interactable',
         texture: 'npc_kyla',
         speaker: 'Kyla',
@@ -835,7 +843,7 @@ export const LEVELS = [
       {
         // Ground — Prof. Andrew final speech
         id: 'l8-prof-andrew',
-        x: 2700, y: 524,
+        x: 2700, y: 516,
         objectType: 'npc',
         texture: 'npc_professor',
         speaker: 'Prof. Andrew',

@@ -26,7 +26,6 @@ export default class BootScene extends Phaser.Scene {
 
   preload() {
     // Background wall bands
-    this.load.image('bg_menu',   'assets/bg_menu.png');
     this.load.image('bg_level1', 'assets/bg_level1.png');
     this.load.image('bg_level2', 'assets/bg_level2.png');
     this.load.image('bg_level3', 'assets/bg_level3.png');

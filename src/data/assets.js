@@ -378,14 +378,6 @@ export const ASSET_MANIFEST = {
   },
 
   // Main menu background — full screen, title screen backdrop
-  bg_menu: {
-    placeholder: { shape: 'rect', color: 0x0d1117, w: 800, h: 600 },
-    size: '800x600',
-    tool: 'Stability Matrix',
-    prompt:
-      '<lora:pixelbuildings128-v2:1> pixel art main menu background, 16-bit SNES style, futuristic city street at night 2070s, dark blue-black sky filled with stars above, tall neon-lit buildings lining the sides, amber streetlamps casting warm pools of light along a wide center road, large glowing archway structure in the far center distance, city lights reflecting on wet cobblestone street, warm adventurous atmosphere, deep navy and amber neon color palette, retro game title screen background, crisp pixel edges, no smoothing',
-  },
-
   // ═══════════════════════════════════════════════════════
   //  LEVEL PROPS (environment decorations, placed as sprites)
   //  All currently drawn via graphics API — replace with sprites.

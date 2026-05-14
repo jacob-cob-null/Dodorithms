@@ -26,8 +26,10 @@ export default class UIScene extends Phaser.Scene {
     this.checklistOverlay    = null;
     this.inventoryPage       = 0;
     this.inventoryPageSize   = 6;
+    this._archiveButtonVisible = null;
 
     this.createTopButtons();
+    this.syncArchiveButtonVisibility();
 
     EventBus.on(EVENTS.OPEN_PUZZLE, (payload) => {
       this.openPuzzleOverlay(payload?.puzzle);
@@ -49,9 +51,36 @@ export default class UIScene extends Phaser.Scene {
     this.inventoryButton.on('pointerdown', () => this.toggleInventory());
   }
 
+  update() {
+    this.syncArchiveButtonVisibility();
+  }
+
+  syncArchiveButtonVisibility() {
+    if (!this.inventoryButton) return;
+
+    const mainMenuActive = this.scene.isActive('MainMenuScene');
+    const gameScene = this.scene.get('GameScene');
+    const gameActive = this.scene.isActive('GameScene') || this.scene.isPaused('GameScene');
+    const endScreenActive = gameActive && (gameScene?.isEndScreen || !gameScene?.currentLevel);
+    const shouldShow = gameActive && !mainMenuActive && !endScreenActive;
+
+    if (this._archiveButtonVisible === shouldShow) return;
+    this._archiveButtonVisible = shouldShow;
+
+    this.inventoryButton.setVisible(shouldShow);
+    this.inventoryButton.setActive(shouldShow);
+    if (this.inventoryButton.input) {
+      this.inventoryButton.input.enabled = shouldShow;
+    }
+
+    if (!shouldShow && this.inventoryOverlay) {
+      this.closeInventory();
+    }
+  }
+
   _makePixelButton(x, y, label) {
     const W = label.length * 8 + 24;
-    const H = 22;
+    const H = 24;
     // Draw everything centered on origin so setSize hit area aligns with visuals
     const hw = W / 2, hh = H / 2;
 
@@ -60,7 +89,7 @@ export default class UIScene extends Phaser.Scene {
     const bg = this.add.graphics();
     this._drawBtnBg(bg, hw, hh, W, H, false);
 
-    const text = this.add.text(0, 0, label, {
+    const text = this.add.text(0, -1, label, {
       ...FONT_MONO, fontSize: '11px', color: COL_CYAN,
     }).setOrigin(0.5, 0.5);
 

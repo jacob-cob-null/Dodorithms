@@ -56,6 +56,19 @@ body {
     inset 0 0 92px rgba(0, 0, 0, 0.38);
 }
 
+#game[data-crt-scene="menu"] .crt-shell::before {
+  opacity: 0.22;
+}
+
+#game[data-crt-scene="menu"] .crt-shell::after {
+  background:
+    radial-gradient(ellipse at center, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0.016) 38%, rgba(0, 0, 0, 0) 66%),
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 72%, rgba(0, 0, 0, 0.08) 90%, rgba(0, 0, 0, 0.18) 100%);
+  box-shadow:
+    inset 0 0 28px rgba(125, 211, 252, 0.08),
+    inset 0 0 58px rgba(0, 0, 0, 0.16);
+}
+
 @keyframes crtNoise {
   0% { transform: translate3d(0, 0, 0); opacity: 0.055; }
   50% { transform: translate3d(0.25%, -0.25%, 0); opacity: 0.075; }
