@@ -40,6 +40,13 @@ export default class CutsceneScene extends Phaser.Scene {
     this.canAdvance = false;
     this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
 
+    ['music_menu','music_level1','music_level2','music_minigame','music_gamecomplete']
+      .forEach(k => this.sound.stopByKey(k));
+    ['sfx_portal_hum','sfx_level_complete','sfx_gamecomplete_sting']
+      .forEach(k => this.sound.stopByKey(k));
+    this.sound.stopByKey('music_story');
+    this.sound.play('music_story', { loop: true, volume: 0.3 });
+
     this.add.rectangle(W / 2, H / 2, W, H, 0x020617, 1).setDepth(0);
 
     this.sceneImage = this.add.image(W / 2, H / 2, FRAMES[0].key).setDepth(1);
@@ -94,6 +101,9 @@ export default class CutsceneScene extends Phaser.Scene {
 
     if (this.index >= FRAMES.length - 1) {
       this.transitioning = true;
+      this.sound.stopByKey('sfx_transition');
+      this.sound.play('sfx_transition', { volume: 0.7 });
+      this.sound.stopByKey('music_story');
       this.cameras.main.fadeOut(260, 2, 6, 23);
       this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
         this.scene.start('GameScene', { levelIndex: 0 });
@@ -101,6 +111,8 @@ export default class CutsceneScene extends Phaser.Scene {
       return;
     }
 
+    this.sound.stopByKey('sfx_ui_click');
+    this.sound.play('sfx_ui_click', { volume: 0.6 });
     this.transitioning = true;
     const nextIndex = this.index + 1;
 

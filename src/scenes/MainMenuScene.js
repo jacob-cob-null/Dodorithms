@@ -11,6 +11,13 @@ export default class MainMenuScene extends Phaser.Scene {
       H = 600;
     this._starting = false;
     this._setCrtScene('menu');
+
+    ['music_story','music_level1','music_level2','music_minigame','music_gamecomplete']
+      .forEach(k => this.sound.stopByKey(k));
+    ['sfx_portal_hum','sfx_level_complete','sfx_gamecomplete_sting','sfx_transition']
+      .forEach(k => this.sound.stopByKey(k));
+    this.sound.stopByKey('music_menu');
+    this.sound.play('music_menu', { loop: true, volume: 0.3 });
     applyCrt(this, {
       barrel: 1.006,
       vignetteRadius: 1.05,
@@ -226,14 +233,18 @@ export default class MainMenuScene extends Phaser.Scene {
       .setDepth(11)
       .setInteractive({ useHandCursor: true });
 
-    text.on('pointerover', () => draw(true));
+    text.on('pointerover', () => { draw(true); this.sound.stopByKey('sfx_ui_hover'); this.sound.play('sfx_ui_hover', { volume: 0.6 }); });
     text.on('pointerout', () => draw(false));
+    text.on('pointerdown', () => { this.sound.stopByKey('sfx_ui_click'); this.sound.play('sfx_ui_click', { volume: 0.7 }); });
     return text;
   }
 
   _startRun() {
     if (this._starting) return;
     this._starting = true;
+    this.sound.stopByKey('music_menu');
+    this.sound.stopByKey('sfx_transition');
+    this.sound.play('sfx_transition', { volume: 0.7 });
     this.scene.start('CutsceneScene');
   }
 

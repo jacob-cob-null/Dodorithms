@@ -175,6 +175,7 @@ export default class IntergalacticCensus extends MinigameBase {
         `Wrong! ${list === 'alpha' ? aVal : bVal} is larger — pick the smaller one first.`
       );
       this.feedbackText.setStyle({ color: '#ef4444' });
+      this.playIncorrectSfx();
       this.cameras.main.shake(160, 0.006);
       return;
     }

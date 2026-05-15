@@ -148,6 +148,7 @@ export default class InsertionSort extends MinigameBase {
         `Not quite! ${key} belongs at slot ${correct}${correct === 0 ? ' (before all)' : ` (after ${this.arr[correct - 1]})`}.`
       );
       this.feedbackText.setStyle({ color: '#ef4444' });
+      this.playIncorrectSfx();
       this.cameras.main.shake(160, 0.005);
       return;
     }

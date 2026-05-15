@@ -48,7 +48,7 @@ export default class UIScene extends Phaser.Scene {
 
   createTopButtons() {
     this.inventoryButton = this._makePixelButton(750, 14, 'Archive');
-    this.inventoryButton.on('pointerdown', () => this.toggleInventory());
+    this.inventoryButton.on('pointerdown', () => { this._playSfx('sfx_ui_click', { volume: 0.6 }); this.toggleInventory(); });
   }
 
   update() {
@@ -264,6 +264,7 @@ export default class UIScene extends Phaser.Scene {
   openInventory() {
     if (this.inventoryOverlay) return;
     if (this.checklistOverlay) this.closeChecklist();
+    this._playSfx('sfx_panel_open', { volume: 0.6 });
 
     const { container, contentY, w, h } = this._openHologramTablet(
       'Algorithm Archive',
@@ -376,8 +377,8 @@ export default class UIScene extends Phaser.Scene {
       const next = this._makePixelButton(-w / 2 + 52, h / 2 - 22, 'NEXT >');
       prev.setVisible(this.inventoryPage > 0);
       next.setVisible(this.inventoryPage < totalPages - 1);
-      prev.on('pointerdown', () => { this.inventoryPage--; this._buildArchiveContent(); });
-      next.on('pointerdown', () => { this.inventoryPage++; this._buildArchiveContent(); });
+      prev.on('pointerdown', () => { this._playSfx('sfx_ui_click', { volume: 0.6 }); this.inventoryPage--; this._buildArchiveContent(); });
+      next.on('pointerdown', () => { this._playSfx('sfx_ui_click', { volume: 0.6 }); this.inventoryPage++; this._buildArchiveContent(); });
       c.add(prev); c.add(next);
       this._archiveContentNodes.push(prev, next);
     }
@@ -396,6 +397,7 @@ export default class UIScene extends Phaser.Scene {
 
   closeInventory() {
     if (!this.inventoryOverlay) return;
+    this._playSfx('sfx_panel_close', { volume: 0.6 });
     const ref = this.inventoryOverlay;
     this.inventoryOverlay = null;
     this._archiveContentNodes = null;
@@ -511,6 +513,7 @@ export default class UIScene extends Phaser.Scene {
 
   showAlgorithmUnlocked(algorithm) {
     if (this.unlockCard) { this.unlockCard.destroy(true); this.unlockCard = null; }
+    this._playSfx('sfx_puzzle_complete', { volume: 0.7 });
 
     const card = this.add.container(400, 0);
 
@@ -557,4 +560,9 @@ export default class UIScene extends Phaser.Scene {
   // ─────────────────────────────────────────────────────────────
 
   createButton(x, y, label) { return this._makePixelButton(x, y, label); }
+
+  _playSfx(key, config = {}) {
+    this.sound.stopByKey(key);
+    return this.sound.play(key, config);
+  }
 }

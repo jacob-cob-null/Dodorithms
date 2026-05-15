@@ -131,6 +131,7 @@ export default class SelectionSort extends MinigameBase {
       );
       this.feedbackText.setStyle({ color: '#ef4444' });
       this.tileBgs[clickedIdx].setStrokeStyle(2, 0xef4444);
+      this.playIncorrectSfx();
       this.cameras.main.shake(180, 0.006);
       this.time.delayedCall(500, () => this._refreshTile(clickedIdx));
       return;

@@ -25,6 +25,17 @@ const LEVEL_ACCENTS = {
   level8: 0xfbbf24,
 };
 
+const MUSIC_KEYS = [
+  'music_menu',
+  'music_story',
+  'music_level1',
+  'music_level2',
+  'music_minigame',
+  'music_gamecomplete',
+];
+
+const LEVEL_MUSIC_KEYS = ['music_level1', 'music_level2'];
+
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super("GameScene");
@@ -52,6 +63,15 @@ export default class GameScene extends Phaser.Scene {
     if (!levelConfig) {
       this.currentLevel = null;
       this.isEndScreen = true;
+      this._stopMusic();
+      ['sfx_portal_hum','sfx_level_complete','sfx_transition']
+        .forEach(k => this.sound.stopByKey(k));
+      this.sound.stopByKey('sfx_gamecomplete_sting');
+      this.sound.play('sfx_gamecomplete_sting', { volume: 0.8 });
+      this.time.delayedCall(1000, () => {
+        this.sound.stopByKey('music_gamecomplete');
+        this.sound.play('music_gamecomplete', { loop: true, volume: 0.3 });
+      });
       this.showEndScreen();
       return;
     }
@@ -59,6 +79,17 @@ export default class GameScene extends Phaser.Scene {
     this.currentLevel = levelConfig;
     this.isEndScreen = false;
     const { worldWidth, bgColor, playerStart, platforms, obstacles, exit } = levelConfig;
+
+    // Level music
+    this._playLevelMusic(levelConfig);
+    ['sfx_portal_hum','sfx_level_complete','sfx_gamecomplete_sting','sfx_transition']
+      .forEach(k => this.sound.stopByKey(k));
+
+    // Resume level music after a minigame closes
+    this.events.on('resume', () => {
+      this.sound.stopByKey('music_minigame');
+      this._playLevelMusic(this.currentLevel);
+    }, this);
 
     // World setup
     this.cameras.main.setBackgroundColor(bgColor);
@@ -140,6 +171,22 @@ export default class GameScene extends Phaser.Scene {
     EventBus.on(EVENTS.PUZZLE_COMPLETE, this._onPuzzleComplete, this);
 
     this.events.on('shutdown', this.cleanup, this);
+  }
+
+  _getLevelMusicKey(levelConfig = this.currentLevel) {
+    if (levelConfig?.musicKey) return levelConfig.musicKey;
+    return LEVEL_MUSIC_KEYS[this.levelIndex % LEVEL_MUSIC_KEYS.length];
+  }
+
+  _stopMusic() {
+    MUSIC_KEYS.forEach(key => this.sound.stopByKey(key));
+  }
+
+  _playLevelMusic(levelConfig = this.currentLevel) {
+    const levelMusicKey = this._getLevelMusicKey(levelConfig);
+    this._stopMusic();
+    this.sound.play(levelMusicKey, { loop: true, volume: 0.3 });
+    this._levelMusicKey = levelMusicKey;
   }
 
   buildObstacle(cfg) {
@@ -298,6 +345,11 @@ export default class GameScene extends Phaser.Scene {
       onInteract: () => {
         this.playerController?.setEnabled(false);
         this.interactionSystem?.setEnabled(false);
+        this.sound.stopByKey('sfx_portal_hum');
+        this.sound.stopByKey('sfx_level_complete');
+        this.sound.play('sfx_portal_hum', { volume: 0.6 });
+        this.sound.stopByKey(this._levelMusicKey);
+        this.sound.play('sfx_level_complete', { volume: 0.8 });
         this.cameras.main.fadeOut(900, 0, 0, 0);
         this.cameras.main.once('camerafadeoutcomplete', () => {
           this.scene.start('GameScene', { levelIndex: this.levelIndex + 1 });

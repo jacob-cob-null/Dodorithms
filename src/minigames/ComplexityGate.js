@@ -174,6 +174,7 @@ export default class ComplexityGate extends MinigameBase {
       }
     } else {
       // Wrong door — shake and snap back
+      this.playIncorrectSfx();
       this.cameras.main.shake(160, 0.005);
       this.feedbackText.setText(`Not quite — that problem belongs in "${answer}". Try again!`);
       this.feedbackText.setStyle({ color: '#ef4444' });

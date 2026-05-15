@@ -28,7 +28,7 @@ const DIALOGUE_AUDIO_KEYS = {
   ],
 };
 const DIALOGUE_VOICE_MAX_MS = 3000;
-const DIALOGUE_VOICE_VOLUME = 0.4;
+const DIALOGUE_VOICE_VOLUME = 0.8;
 
 const PORTRAIT_KEYS = {
   Laurenze: [
@@ -164,8 +164,13 @@ export default class DialogueSystem {
 
     EventBus.on(EVENTS.SHOW_PROMPT, (payload) => {
       if (this.active || !payload) return;
+      const wasHidden = !this.promptText.visible;
       this.promptText.setText(payload.text || 'Press E');
       this.promptText.setVisible(true);
+      if (wasHidden) {
+        scene.sound.stopByKey('sfx_interact_prompt');
+        scene.sound.play('sfx_interact_prompt', { volume: 0.5 });
+      }
     });
 
     EventBus.on(EVENTS.HIDE_PROMPT, () => {
@@ -299,11 +304,15 @@ export default class DialogueSystem {
     this.hintText.setVisible(true);
     this.dialogueText.setVisible(true);
     this.dialogueText.setText(this.lines[this.index]);
+    this.scene.sound.stopByKey('sfx_panel_open');
+    this.scene.sound.play('sfx_panel_open', { volume: 0.5 });
     this._playVoice();
   }
 
   endDialogue() {
     this._stopVoice();
+    this.scene.sound.stopByKey('sfx_panel_close');
+    this.scene.sound.play('sfx_panel_close', { volume: 0.5 });
     this.active = false;
     this.lines = [];
     this.index = 0;
@@ -329,6 +338,8 @@ export default class DialogueSystem {
       if (this.index >= this.lines.length) {
         this.endDialogue();
       } else {
+        this.scene.sound.stopByKey('sfx_ui_click');
+        this.scene.sound.play('sfx_ui_click', { volume: 0.5 });
         this._refreshPortrait();
         this.dialogueText.setText(this.lines[this.index]);
         this._playVoice();

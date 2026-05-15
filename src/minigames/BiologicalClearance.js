@@ -171,6 +171,7 @@ export default class BiologicalClearance extends MinigameBase {
           `Mismatch at offset ${step}: text='${TEXT[textIdx]}' ≠ pattern='${PATTERN[step]}'. Shift right.`
         );
         this.feedbackText.setStyle({ color: '#ef4444' });
+        this.playIncorrectSfx();
 
         // After showing the mismatch, auto-shift
         this.time.delayedCall(900, () => this._shift());

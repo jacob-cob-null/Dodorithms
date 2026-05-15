@@ -133,6 +133,7 @@ export default class BinarySearch extends MinigameBase {
     if (i !== mid) {
       this.feedbackText.setText(`That's not the midpoint. mid = ⌊(${this.lo}+${this.hi})/2⌋ = ${mid}.`);
       this.feedbackText.setStyle({ color: '#ef4444' });
+      this.playIncorrectSfx();
       this.cameras.main.shake(160, 0.005);
       return;
     }

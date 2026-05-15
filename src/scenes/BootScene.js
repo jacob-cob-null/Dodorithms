@@ -61,6 +61,32 @@ export default class BootScene extends Phaser.Scene {
       }
     }
 
+    // Music
+    this.load.audio('music_menu',         'sfx/music_menu.mp3');
+    this.load.audio('music_story',        'sfx/music_story.mp3');
+    this.load.audio('music_level1',       'sfx/music_level1.mp3');
+    this.load.audio('music_level2',       'sfx/music_level2.mp3');
+    this.load.audio('music_minigame',     'sfx/music_minigame.mp3');
+    this.load.audio('music_gamecomplete', 'sfx/music_gamecomplete.mp3');
+
+    // SFX
+    this.load.audio('sfx_ui_click',          'sfx/sfx_ui_click.wav');
+    this.load.audio('sfx_ui_hover',          'sfx/sfx_ui_hover.wav');
+    this.load.audio('sfx_transition',        'sfx/sfx_transition.wav');
+    this.load.audio('sfx_panel_open',        'sfx/sfx_panel_open.mp3');
+    this.load.audio('sfx_panel_close',       'sfx/sfx_panel_close.mp3');
+    this.load.audio('sfx_interact_prompt',   'sfx/sfx_interact_prompt.wav');
+    this.load.audio('sfx_player_footstep',   'sfx/sfx_player_footstep.mp3');
+    this.load.audio('sfx_player_jump',       'sfx/sfx_player_jump.wav');
+    this.load.audio('sfx_player_double_jump','sfx/sfx_player_double_jump.wav');
+    this.load.audio('sfx_player_land',       'sfx/sfx_player_land.wav');
+    this.load.audio('sfx_puzzle_correct',    'sfx/sfx_puzzle_correct.wav');
+    this.load.audio('sfx_puzzle_incorrect',  'sfx/sfx_puzzle_incorrect.wav');
+    this.load.audio('sfx_puzzle_complete',   'sfx/sfx_puzzle_complete.wav');
+    this.load.audio('sfx_portal_hum',        'sfx/sfx_portal_hum.wav');
+    this.load.audio('sfx_level_complete',    'sfx/sfx_level_complete.mp3');
+    this.load.audio('sfx_gamecomplete_sting','sfx/sfx_gamecomplete_sting.mp3');
+
     // Dialogue voice sfx (3 variants per character)
     this.load.audio('dialogue_jacob_1',    'dialogue/Jacob_1.mp3');
     this.load.audio('dialogue_jacob_2',    'dialogue/jacob_2.mp3');
@@ -214,7 +240,21 @@ export default class BootScene extends Phaser.Scene {
   }
 
   create() {
-    this.scene.start("MainMenuScene");
-    this.scene.launch("UIScene");
+    // Show a minimal prompt — any interaction unlocks the audio context
+    // so music_menu plays immediately when MainMenuScene loads.
+    this.add.rectangle(400, 300, 800, 600, 0x020617);
+    this.add.text(400, 300, 'PRESS ANY KEY', {
+      fontFamily: 'monospace',
+      fontSize: '18px',
+      color: '#334155',
+    }).setOrigin(0.5);
+
+    const launch = () => {
+      this.scene.start('MainMenuScene');
+      this.scene.launch('UIScene');
+    };
+
+    this.input.keyboard.once('keydown', launch);
+    this.input.once('pointerdown', launch);
   }
 }

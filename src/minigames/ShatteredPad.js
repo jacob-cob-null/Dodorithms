@@ -116,6 +116,7 @@ export default class ShatteredPad extends MinigameBase {
       const bad = !divides18 ? PAD_W_M : PAD_H_M;
       this.feedbackText.setText(`✗  ${bad} ÷ ${size} = ${(bad / size).toFixed(1)} — that tile would need to be cut!`);
       this.feedbackText.setStyle({ color: '#ef4444' });
+      this.playIncorrectSfx();
       this.cameras.main.shake(220, 0.008);
       this.drawPadEmpty();
     }

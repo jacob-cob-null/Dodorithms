@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+import Phaser from 'phaser';
 
 export default class PlayerController {
   constructor(scene, player) {
@@ -8,11 +8,11 @@ export default class PlayerController {
 
     this.cursors = scene.input.keyboard.createCursorKeys();
     this.keys = scene.input.keyboard.addKeys({
-      left: "A",
-      right: "D",
-      up: "W",
-      down: "S",
-      jump: "SPACE",
+      left: 'A',
+      right: 'D',
+      up: 'W',
+      down: 'S',
+      jump: 'SPACE',
     });
   }
 
@@ -20,7 +20,7 @@ export default class PlayerController {
   _applyDisplaySize(p) {
     p.setDisplaySize(48, 64);
     const src = p.texture.getSourceImage();
-    const tw = src.width  || 48;
+    const tw = src.width || 48;
     const th = src.height || 64;
     const bw = Math.round(tw * 0.5);
     const bh = Math.round(th * 0.65);
@@ -77,32 +77,50 @@ export default class PlayerController {
 
       if (newState === 'idle') p.setTexture('player_idle');
       if (newState === 'jump') p.setTexture('player_jump');
-      if (newState === 'walk') { p.setTexture('player_walk1'); p._walkFrame = 0; }
+      if (newState === 'walk') {
+        p.setTexture('player_walk1');
+        p._walkFrame = 0;
+      }
 
       this._applyDisplaySize(p);
 
       // Stop bob when leaving jump
-      if (this._bobTween) { this._bobTween.stop(); this._bobTween = null; }
+      if (this._bobTween) {
+        this._bobTween.stop();
+        this._bobTween = null;
+      }
     }
 
     // Landing squash + camera shake
     if (onGround && !p._wasOnGround && p.body.velocity.y > 100) {
+      this.scene.sound.stopByKey('sfx_player_land');
+      this.scene.sound.play('sfx_player_land', { volume: 0.5 });
       if (p.body.velocity.y > 250) {
         this.scene.cameras.main.shake(80, 0.003);
       }
     }
 
     if (jumpPressed && p._jumpsUsed < 2) {
+      this.scene.sound.stopByKey(p._jumpsUsed === 0 ? 'sfx_player_jump' : 'sfx_player_double_jump');
+      this.scene.sound.play(
+        p._jumpsUsed === 0 ? 'sfx_player_jump' : 'sfx_player_double_jump',
+        { volume: 0.6 },
+      );
       p.setVelocityY(-380);
       p._jumpsUsed++;
       // Stop any existing bob, do a quick 1% stretch, then restart bob
-      if (this._bobTween) { this._bobTween.stop(); this._bobTween = null; }
+      if (this._bobTween) {
+        this._bobTween.stop();
+        this._bobTween = null;
+      }
       this._applyDisplaySize(p);
       const sy = p.scaleY;
       this.scene.tweens.add({
         targets: p,
         scaleY: sy * 1.005,
-        duration: 90, yoyo: true, ease: 'Sine.Out',
+        duration: 90,
+        yoyo: true,
+        ease: 'Sine.Out',
         onComplete: () => {
           this._applyDisplaySize(p);
           if (p.state === 'jump' && !this._bobTween) {
@@ -110,7 +128,9 @@ export default class PlayerController {
               targets: p,
               scaleY: p.scaleY * 1.01,
               duration: 300,
-              yoyo: true, repeat: -1, ease: 'Sine.InOut',
+              yoyo: true,
+              repeat: -1,
+              ease: 'Sine.InOut',
               onStop: () => this._applyDisplaySize(p),
             });
           }
@@ -128,6 +148,8 @@ export default class PlayerController {
         p._walkFrame = (p._walkFrame + 1) % 3;
         p.setTexture(`player_walk${p._walkFrame + 1}`);
         this._applyDisplaySize(p);
+        this.scene.sound.stopByKey('sfx_player_footstep');
+        this.scene.sound.play('sfx_player_footstep', { volume: 0.6 });
       }
     }
   }

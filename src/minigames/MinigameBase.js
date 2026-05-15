@@ -27,6 +27,7 @@ export default class MinigameBase extends Phaser.Scene {
     this.sceneKey = sceneKey;
     this._tabletShell = null;
     this._isFinishing = false;
+    this._lastSfxAt = new Map();
   }
 
   createTablet(title, options = {}) {
@@ -72,6 +73,12 @@ export default class MinigameBase extends Phaser.Scene {
     this._drawScanlines(shell);
     this._drawScanlineOverlay();
 
+    // Stop level music, play minigame music
+    ['music_level1','music_level2'].forEach(k => this.sound.stopByKey(k));
+    this.sound.stopByKey('music_minigame');
+    this.sound.play('music_minigame', { loop: true, volume: 0.3 });
+    this.playSfx('sfx_panel_open', { volume: 0.6 });
+
     shell.setScale(0.05);
     shell.setAlpha(0);
     this.tweens.add({
@@ -86,6 +93,10 @@ export default class MinigameBase extends Phaser.Scene {
     this.time.delayedCall(80, () => shell?.setAlpha(1));
     this.time.delayedCall(115, () => shell?.setAlpha(0.72));
     this.time.delayedCall(140, () => shell?.setAlpha(1));
+
+    // Global sfx for every interactive element in this scene
+    this.input.on('gameobjectover', () => this.playSfx('sfx_ui_hover', { volume: 0.5 }, { cooldown: 45 }));
+    this.input.on('gameobjectdown', () => this.playSfx('sfx_ui_click', { volume: 0.6 }));
 
     this.contentBounds = CONTENT;
     return CONTENT;
@@ -138,7 +149,27 @@ export default class MinigameBase extends Phaser.Scene {
     return button;
   }
 
+  playSfx(key, config = {}, options = {}) {
+    const { interrupt = true, cooldown = 0 } = options;
+    const now = this.time?.now ?? 0;
+
+    if (cooldown > 0) {
+      const last = this._lastSfxAt.get(key) ?? -Infinity;
+      if (now - last < cooldown) return false;
+      this._lastSfxAt.set(key, now);
+    }
+
+    if (interrupt) this.sound.stopByKey(key);
+    return this.sound.play(key, config);
+  }
+
+  playIncorrectSfx(volume = 0.9) {
+    this.sound.stopByKey('sfx_ui_click');
+    return this.playSfx('sfx_puzzle_incorrect', { volume });
+  }
+
   showMistake(message = 'Incorrect input. Recalibrate and try again.') {
+    this.playIncorrectSfx();
     this.cameras.main.shake(140, 0.004);
     const flash = this.add.rectangle(400, 300, 720, 520, 0xef4444, 0.16).setDepth(999);
     const label = this.add.text(400, 520, message, {
@@ -166,6 +197,9 @@ export default class MinigameBase extends Phaser.Scene {
     this._isFinishing = true;
 
     const { delay = 1500, success = true } = options;
+    this.sound.stopByKey('music_minigame');
+    this.sound.stopByKey('sfx_ui_click');
+    this.playSfx(success ? 'sfx_puzzle_complete' : 'sfx_puzzle_incorrect', { volume: 0.7 });
     const tint = success ? 0x4ade80 : 0xef4444;
     const title = success ? 'ALGORITHM MASTERED' : 'MODULE SKIPPED';
     const color = success ? '#bbf7d0' : '#fecaca';

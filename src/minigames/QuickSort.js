@@ -143,6 +143,7 @@ export default class QuickSort extends MinigameBase {
     if (i < cur.lo || i > cur.hi) {
       this.feedbackText.setText(`Pick from the yellow range [${cur.lo}..${cur.hi}].`);
       this.feedbackText.setStyle({ color: '#ef4444' });
+      this.playIncorrectSfx();
       return;
     }
 

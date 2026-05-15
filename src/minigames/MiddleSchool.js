@@ -120,6 +120,7 @@ export default class MiddleSchool extends MinigameBase {
       this.feedbackText.setText(`${this.remaining} ÷ ${p} = ${(this.remaining / p).toFixed(2)} — not a whole number! Try a different prime.`);
       this.feedbackText.setStyle({ color: '#ef4444' });
       btn.setStrokeStyle(2, 0xef4444);
+      this.playIncorrectSfx();
       this.cameras.main.shake(200, 0.007);
       this.time.delayedCall(500, () => btn.setStrokeStyle(2, 0x475569));
       return;

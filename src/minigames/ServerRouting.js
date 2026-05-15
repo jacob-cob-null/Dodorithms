@@ -154,6 +154,7 @@ export default class ServerRouting extends MinigameBase {
       this._processVisit(idx);
     } else {
       // Wrong node — shake and hint
+      this.playIncorrectSfx();
       this.cameras.main.shake(180, 0.005);
       const correctName = NODE_POS[expected].label;
       const correctDist = this.dist[expected];

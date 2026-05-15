@@ -129,6 +129,7 @@ export default class BubbleSort extends MinigameBase {
         : `${this.arr[i]} ≤ ${this.arr[j]} — they should KEEP order.`;
       this.feedbackText.setText(hint);
       this.feedbackText.setStyle({ color: '#ef4444' });
+      this.playIncorrectSfx();
       this.cameras.main.shake(160, 0.006);
       return;
     }

@@ -106,6 +106,7 @@ export default class SequentialSearch extends MinigameBase {
       this.rowBgs[this.idx].setFillStyle(0x7f1d1d).setStrokeStyle(2, 0xef4444);
       this.rowObjs[this.idx].nameT.setStyle({ color: '#ef4444' });
       this.scanBtn.setAlpha(0);
+      this.playIncorrectSfx();
       this.cameras.main.shake(300, 0.01);
 
       this.feedbackText.setText(

@@ -111,6 +111,7 @@ export default class QueenGrid extends MinigameBase {
   _placeQueen(row, col) {
     if (!this._isSafe(row, col)) {
       // Flash attacked indicator
+      this.playIncorrectSfx();
       this.cameras.main.shake(160, 0.005);
       this.feedbackText.setText(`Column ${col} is under attack! Choose a safe column.`);
       this.feedbackText.setStyle({ color: '#ef4444' });

@@ -221,6 +221,7 @@ export default class RouteOptimizer extends MinigameBase {
     const correct = d.action === choice;
 
     if (!correct) {
+      this.playIncorrectSfx();
       this.cameras.main.shake(180, 0.005);
       const hint = d.action === 'prune'
         ? `Bound (${d.bound}) ≥ best (${d.bestBefore}) — no improvement possible. Prune it!`

@@ -146,6 +146,7 @@ export default class ConsecutiveInt extends MinigameBase {
         `${t} ${!aOk ? `doesn't divide ${A}` : `doesn't divide ${B}`} — try a smaller number.`
       );
       this.feedbackText.setStyle({ color: '#fbbf24' });
+      this.playIncorrectSfx();
       this.cameras.main.shake(180, 0.005);
 
       // Update history chips (show last 10)

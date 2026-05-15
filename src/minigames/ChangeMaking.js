@@ -173,6 +173,7 @@ export default class ChangeMaking extends MinigameBase {
       );
       this.feedbackText.setStyle({ color: '#ef4444' });
       btn.setStrokeStyle(2, 0xef4444);
+      this.playIncorrectSfx();
       this.cameras.main.shake(160, 0.005);
       this.time.delayedCall(500, () => btn.setStrokeStyle(2, 0x475569));
       return;
