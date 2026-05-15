@@ -28,6 +28,11 @@ class ArchiveSystem {
     return Array.from(this.algorithms.values());
   }
 
+  clear() {
+    this.algorithms.clear();
+    this.save();
+  }
+
   load() {
     try {
       const raw = localStorage.getItem(this.storageKey);
