@@ -9,6 +9,7 @@ export default class MainMenuScene extends Phaser.Scene {
   create() {
     const W = 800,
       H = 600;
+    this._starting = false;
     this._setCrtScene('menu');
     applyCrt(this, {
       barrel: 1.006,
@@ -43,8 +44,9 @@ export default class MainMenuScene extends Phaser.Scene {
 
     const playBtn = this._makeMenuButton(W / 2, 458, 'START RUN');
     playBtn.on('pointerdown', () => {
-      this.scene.start('GameScene', { levelIndex: 0 });
+      this._startRun();
     });
+    this.input.keyboard.once('keydown-ENTER', this._startRun, this);
 
     this.add
       .text(W / 2, 524, 'Archive target: 30 algorithms', {
@@ -227,6 +229,12 @@ export default class MainMenuScene extends Phaser.Scene {
     text.on('pointerover', () => draw(true));
     text.on('pointerout', () => draw(false));
     return text;
+  }
+
+  _startRun() {
+    if (this._starting) return;
+    this._starting = true;
+    this.scene.start('CutsceneScene');
   }
 
   _drawPixelPlanet(x, y, r, base, hi, shade, ring, depth) {

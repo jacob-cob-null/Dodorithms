@@ -35,6 +35,10 @@ export default class BootScene extends Phaser.Scene {
     this.load.image('bg_level7', 'assets/bg_level7.png');
     this.load.image('bg_level8', 'assets/bg_level8.png');
 
+    for (let i = 1; i <= 5; i += 1) {
+      this.load.image(`intro_scene_${i}`, `assets/cutscene/scene_${i}.png`);
+    }
+
     // Player sprites
     this.load.image('player_idle',  'assets/player_idle.png');
     this.load.image('player_walk1', 'assets/player_walk1.png');

@@ -3,6 +3,7 @@ import "./style.css";
 import { installCrtDomOverlay } from "./systems/CrtSystem.js";
 import BootScene        from "./scenes/BootScene.js";
 import MainMenuScene    from "./scenes/MainMenuScene.js";
+import CutsceneScene    from "./scenes/CutsceneScene.js";
 import GameScene        from "./scenes/GameScene.js";
 import UIScene          from "./scenes/UIScene.js";
 import ShatteredPad     from "./minigames/ShatteredPad.js";
@@ -56,7 +57,7 @@ const config = {
       debug: false,
     },
   },
-  scene: [BootScene, MainMenuScene, GameScene, UIScene, ShatteredPad, GuestList, ConsecutiveInt, MiddleSchool, SequentialSearch, MaxElement, ExhaustiveSearch, SelectionSort, BubbleSort, BiologicalClearance, InsertionSort, DFS, HyperTrain, BinarySearch, InterpolationSearch, QuickSort, IntergalacticCensus, HeapPriority, PreSort, ChangeMaking, CargoGrid, SpanningTree, HuffmanCode, ServerRouting, QueenGrid, RouteOptimizer, ComplexityGate],
+  scene: [BootScene, MainMenuScene, CutsceneScene, GameScene, UIScene, ShatteredPad, GuestList, ConsecutiveInt, MiddleSchool, SequentialSearch, MaxElement, ExhaustiveSearch, SelectionSort, BubbleSort, BiologicalClearance, InsertionSort, DFS, HyperTrain, BinarySearch, InterpolationSearch, QuickSort, IntergalacticCensus, HeapPriority, PreSort, ChangeMaking, CargoGrid, SpanningTree, HuffmanCode, ServerRouting, QueenGrid, RouteOptimizer, ComplexityGate],
 };
 
 new Phaser.Game(config);
