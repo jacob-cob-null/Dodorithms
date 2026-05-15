@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { applyCrt } from '../systems/CrtSystem.js';
+import archiveSystem from '../systems/ArchiveSystem.js';
 
 export default class MainMenuScene extends Phaser.Scene {
   constructor() {
@@ -242,6 +243,7 @@ export default class MainMenuScene extends Phaser.Scene {
   _startRun() {
     if (this._starting) return;
     this._starting = true;
+    archiveSystem.clear();
     this.sound.stopByKey('music_menu');
     this.sound.stopByKey('sfx_transition');
     this.sound.play('sfx_transition', { volume: 0.7 });
