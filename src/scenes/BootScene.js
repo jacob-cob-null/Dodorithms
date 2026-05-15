@@ -61,6 +61,23 @@ export default class BootScene extends Phaser.Scene {
       }
     }
 
+    // Dialogue voice sfx (3 variants per character)
+    this.load.audio('dialogue_jacob_1',    'dialogue/Jacob_1.mp3');
+    this.load.audio('dialogue_jacob_2',    'dialogue/jacob_2.mp3');
+    this.load.audio('dialogue_jacob_3',    'dialogue/jacob_3.mp3');
+    this.load.audio('dialogue_kyla_1',     'dialogue/Kyla_1.mp3');
+    this.load.audio('dialogue_kyla_2',     'dialogue/Kyla_2.mp3');
+    this.load.audio('dialogue_kyla_3',     'dialogue/Kyla_3.mp3');
+    this.load.audio('dialogue_laurenze_1', 'dialogue/Laurenze_1.mp3');
+    this.load.audio('dialogue_laurenze_2', 'dialogue/Laurenze_2.mp3');
+    this.load.audio('dialogue_laurenze_3', 'dialogue/Laurenze_3.mp3');
+    this.load.audio('dialogue_professor_1','dialogue/Professor_1.mp3');
+    this.load.audio('dialogue_professor_2','dialogue/Professor_2.mp3');
+    this.load.audio('dialogue_professor_3','dialogue/Professor_3.mp3');
+    this.load.audio('dialogue_trizy_1',    'dialogue/Trizy_1.mp3');
+    this.load.audio('dialogue_trizy_2',    'dialogue/Trizy_2.mp3');
+    this.load.audio('dialogue_trizy_3',    'dialogue/Trizy_3.mp3');
+
     const g = this.add.graphics();
 
     // ── Player fallback (used as 'player' key for physics body sizing) ──

@@ -12,6 +12,24 @@ const PORTRAIT_COLORS = {
 };
 const DEFAULT_COLOR = 0x64748b;
 
+const DIALOGUE_AUDIO_KEYS = {
+  Laurenze: [
+    'dialogue_laurenze_1',
+    'dialogue_laurenze_2',
+    'dialogue_laurenze_3',
+  ],
+  Trizy: ['dialogue_trizy_1', 'dialogue_trizy_2', 'dialogue_trizy_3'],
+  Jacob: ['dialogue_jacob_1', 'dialogue_jacob_2', 'dialogue_jacob_3'],
+  Kyla: ['dialogue_kyla_1', 'dialogue_kyla_2', 'dialogue_kyla_3'],
+  'Prof. Andrew': [
+    'dialogue_professor_1',
+    'dialogue_professor_2',
+    'dialogue_professor_3',
+  ],
+};
+const DIALOGUE_VOICE_MAX_MS = 3000;
+const DIALOGUE_VOICE_VOLUME = 0.4;
+
 const PORTRAIT_KEYS = {
   Laurenze: [
     'portrait_laurenze_a',
@@ -58,6 +76,9 @@ export default class DialogueSystem {
     this.onComplete = null;
     this._currentSpeaker = '';
     this._availablePortraits = [];
+    this._voiceSound = null;
+    this._voiceTimer = null;
+    this._voiceSounds = new Map();
 
     // Background box — spans x:20→780, y:448→592
     this.dialogueBg = scene.add
@@ -161,6 +182,67 @@ export default class DialogueSystem {
     });
 
     scene.events.on('update', this.update, this);
+    scene.events.once('destroy', this.destroy, this);
+  }
+
+  _stopVoice() {
+    if (this._voiceTimer) {
+      this._voiceTimer.remove(false);
+      this._voiceTimer = null;
+    }
+
+    if (this._voiceSound?.isPlaying) {
+      this._voiceSound.stop();
+    }
+    this._voiceSound = null;
+  }
+
+  _getVoiceSound(key) {
+    if (!this.scene.cache.audio.exists(key)) return null;
+
+    if (!this._voiceSounds.has(key)) {
+      this._voiceSounds.set(
+        key,
+        this.scene.sound.add(key, {
+          volume: DIALOGUE_VOICE_VOLUME,
+          loop: false,
+        }),
+      );
+    }
+
+    return this._voiceSounds.get(key);
+  }
+
+  _playVoice() {
+    this._stopVoice();
+
+    const keys = DIALOGUE_AUDIO_KEYS[this._currentSpeaker];
+    if (!keys) return;
+
+    const key = keys[Math.floor(Math.random() * keys.length)];
+    const sound = this._getVoiceSound(key);
+    if (!sound) return;
+
+    this._voiceSound = sound;
+    sound.play({ volume: DIALOGUE_VOICE_VOLUME, loop: false });
+
+    this._voiceTimer = this.scene.time.delayedCall(DIALOGUE_VOICE_MAX_MS, () => {
+      if (this._voiceSound === sound && sound.isPlaying) {
+        sound.stop();
+      }
+      if (this._voiceSound === sound) {
+        this._voiceSound = null;
+      }
+      this._voiceTimer = null;
+    });
+  }
+
+  destroy() {
+    this._stopVoice();
+    for (const sound of this._voiceSounds.values()) {
+      sound.destroy();
+    }
+    this._voiceSounds.clear();
   }
 
   // Pick a random variant and render it in the shared portrait slot.
@@ -217,9 +299,11 @@ export default class DialogueSystem {
     this.hintText.setVisible(true);
     this.dialogueText.setVisible(true);
     this.dialogueText.setText(this.lines[this.index]);
+    this._playVoice();
   }
 
   endDialogue() {
+    this._stopVoice();
     this.active = false;
     this.lines = [];
     this.index = 0;
@@ -247,6 +331,7 @@ export default class DialogueSystem {
       } else {
         this._refreshPortrait();
         this.dialogueText.setText(this.lines[this.index]);
+        this._playVoice();
       }
     }
   }
