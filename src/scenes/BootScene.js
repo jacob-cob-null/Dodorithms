@@ -26,7 +26,6 @@ export default class BootScene extends Phaser.Scene {
 
   preload() {
     // Background wall bands
-    this.load.image('bg_menu',   'assets/bg_menu.png');
     this.load.image('bg_level1', 'assets/bg_level1.png');
     this.load.image('bg_level2', 'assets/bg_level2.png');
     this.load.image('bg_level3', 'assets/bg_level3.png');
@@ -35,6 +34,10 @@ export default class BootScene extends Phaser.Scene {
     this.load.image('bg_level6', 'assets/bg_level6.png');
     this.load.image('bg_level7', 'assets/bg_level7.png');
     this.load.image('bg_level8', 'assets/bg_level8.png');
+
+    for (let i = 1; i <= 5; i += 1) {
+      this.load.image(`intro_scene_${i}`, `assets/cutscene/scene_${i}.png`);
+    }
 
     // Player sprites
     this.load.image('player_idle',  'assets/player_idle.png');
@@ -49,6 +52,57 @@ export default class BootScene extends Phaser.Scene {
     this.load.image('npc_jacob',     'assets/npc_jacob.png');
     this.load.image('npc_kyla',      'assets/npc_kyla.png');
     this.load.image('npc_professor', 'assets/npc_professor.png');
+
+    // NPC dialogue portraits (3 variations each: _a, _b, _c)
+    const PORTRAIT_NPCS = ['laurenze', 'trizy', 'jacob', 'kyla', 'professor'];
+    for (const npc of PORTRAIT_NPCS) {
+      for (const v of ['_a', '_b', '_c']) {
+        this.load.image(`portrait_${npc}${v}`, `assets/portrait_${npc}${v}.png`);
+      }
+    }
+
+    // Music
+    this.load.audio('music_menu',         'sfx/music_menu.mp3');
+    this.load.audio('music_story',        'sfx/music_story.mp3');
+    this.load.audio('music_level1',       'sfx/music_level1.mp3');
+    this.load.audio('music_level2',       'sfx/music_level2.mp3');
+    this.load.audio('music_minigame',     'sfx/music_minigame.mp3');
+    this.load.audio('music_gamecomplete', 'sfx/music_gamecomplete.mp3');
+
+    // SFX
+    this.load.audio('sfx_ui_click',          'sfx/sfx_ui_click.wav');
+    this.load.audio('sfx_ui_hover',          'sfx/sfx_ui_hover.wav');
+    this.load.audio('sfx_transition',        'sfx/sfx_transition.wav');
+    this.load.audio('sfx_panel_open',        'sfx/sfx_panel_open.mp3');
+    this.load.audio('sfx_panel_close',       'sfx/sfx_panel_close.mp3');
+    this.load.audio('sfx_interact_prompt',   'sfx/sfx_interact_prompt.wav');
+    this.load.audio('sfx_player_footstep',   'sfx/sfx_player_footstep.mp3');
+    this.load.audio('sfx_player_jump',       'sfx/sfx_player_jump.wav');
+    this.load.audio('sfx_player_double_jump','sfx/sfx_player_double_jump.wav');
+    this.load.audio('sfx_player_land',       'sfx/sfx_player_land.wav');
+    this.load.audio('sfx_puzzle_correct',    'sfx/sfx_puzzle_correct.wav');
+    this.load.audio('sfx_puzzle_incorrect',  'sfx/sfx_puzzle_incorrect.wav');
+    this.load.audio('sfx_puzzle_complete',   'sfx/sfx_puzzle_complete.wav');
+    this.load.audio('sfx_portal_hum',        'sfx/sfx_portal_hum.wav');
+    this.load.audio('sfx_level_complete',    'sfx/sfx_level_complete.mp3');
+    this.load.audio('sfx_gamecomplete_sting','sfx/sfx_gamecomplete_sting.mp3');
+
+    // Dialogue voice sfx (3 variants per character)
+    this.load.audio('dialogue_jacob_1',    'dialogue/Jacob_1.mp3');
+    this.load.audio('dialogue_jacob_2',    'dialogue/jacob_2.mp3');
+    this.load.audio('dialogue_jacob_3',    'dialogue/jacob_3.mp3');
+    this.load.audio('dialogue_kyla_1',     'dialogue/Kyla_1.mp3');
+    this.load.audio('dialogue_kyla_2',     'dialogue/Kyla_2.mp3');
+    this.load.audio('dialogue_kyla_3',     'dialogue/Kyla_3.mp3');
+    this.load.audio('dialogue_laurenze_1', 'dialogue/Laurenze_1.mp3');
+    this.load.audio('dialogue_laurenze_2', 'dialogue/Laurenze_2.mp3');
+    this.load.audio('dialogue_laurenze_3', 'dialogue/Laurenze_3.mp3');
+    this.load.audio('dialogue_professor_1','dialogue/Professor_1.mp3');
+    this.load.audio('dialogue_professor_2','dialogue/Professor_2.mp3');
+    this.load.audio('dialogue_professor_3','dialogue/Professor_3.mp3');
+    this.load.audio('dialogue_trizy_1',    'dialogue/Trizy_1.mp3');
+    this.load.audio('dialogue_trizy_2',    'dialogue/Trizy_2.mp3');
+    this.load.audio('dialogue_trizy_3',    'dialogue/Trizy_3.mp3');
 
     const g = this.add.graphics();
 
@@ -186,7 +240,21 @@ export default class BootScene extends Phaser.Scene {
   }
 
   create() {
-    this.scene.start("MainMenuScene");
-    this.scene.launch("UIScene");
+    // Show a minimal prompt — any interaction unlocks the audio context
+    // so music_menu plays immediately when MainMenuScene loads.
+    this.add.rectangle(400, 300, 800, 600, 0x020617);
+    this.add.text(400, 300, 'PRESS ANY KEY', {
+      fontFamily: 'monospace',
+      fontSize: '18px',
+      color: '#334155',
+    }).setOrigin(0.5);
+
+    const launch = () => {
+      this.scene.start('MainMenuScene');
+      this.scene.launch('UIScene');
+    };
+
+    this.input.keyboard.once('keydown', launch);
+    this.input.once('pointerdown', launch);
   }
 }

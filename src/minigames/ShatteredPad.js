@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 // Landing pad: 18m × 12m  →  GCD = 6
 const PAD_W_M = 18;
@@ -11,7 +9,7 @@ const PAD_H = PAD_H_M * PX_PER_M; // 240
 const TILE_OPTIONS = [2, 3, 4, 6];
 const CORRECT = 6;
 
-export default class ShatteredPad extends Phaser.Scene {
+export default class ShatteredPad extends MinigameBase {
   constructor() {
     super('ShatteredPad');
   }
@@ -24,7 +22,7 @@ export default class ShatteredPad extends Phaser.Scene {
   create() {
     const W = 800, H = 600;
 
-    this.add.rectangle(W / 2, H / 2, W, H, 0x0d1b2a);
+    this.createTablet(this.algorithm?.name || 'ShatteredPad');
 
     // Header
     this.add.text(W / 2, 38, '🏗  The Shattered Pad', {
@@ -75,10 +73,7 @@ export default class ShatteredPad extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Skip
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
   }
 
   drawPadEmpty() {
@@ -121,6 +116,7 @@ export default class ShatteredPad extends Phaser.Scene {
       const bad = !divides18 ? PAD_W_M : PAD_H_M;
       this.feedbackText.setText(`✗  ${bad} ÷ ${size} = ${(bad / size).toFixed(1)} — that tile would need to be cut!`);
       this.feedbackText.setStyle({ color: '#ef4444' });
+      this.playIncorrectSfx();
       this.cameras.main.shake(220, 0.008);
       this.drawPadEmpty();
     }
@@ -148,9 +144,4 @@ export default class ShatteredPad extends Phaser.Scene {
     g.strokeRect(ox, oy, PAD_W, PAD_H);
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('ShatteredPad');
-  }
 }

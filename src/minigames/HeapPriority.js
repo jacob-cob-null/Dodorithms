@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 // Max-Heap priority queue — treat patients highest severity first
 // Initial heap (array): [9, 7, 4, 3, 1]
@@ -26,7 +24,7 @@ const NODE_POS = [
 
 const EDGE_PAIRS = [[0,1],[0,2],[1,3],[1,4]];
 
-export default class HeapPriority extends Phaser.Scene {
+export default class HeapPriority extends MinigameBase {
   constructor() { super('HeapPriority'); }
 
   init(data) {
@@ -39,7 +37,7 @@ export default class HeapPriority extends Phaser.Scene {
 
   create() {
     const W = 800, H = 600;
-    this.add.rectangle(W / 2, H / 2, W, H, 0x0d0a1f);
+    this.createTablet(this.algorithm?.name || 'HeapPriority');
 
     this.add.text(W / 2, 32, 'Medical Bay — Priority Queue', {
       fontFamily: 'sans-serif', fontSize: '22px', color: '#f8fafc',
@@ -104,10 +102,7 @@ export default class HeapPriority extends Phaser.Scene {
     this.treatBtn.on('pointerout',  () => { if (!this.solved) this.treatBtn.setStyle({ backgroundColor: '#ef4444' }); });
     this.treatBtn.on('pointerdown', () => { if (!this.solved && !this.waiting) this.treatNext(); });
 
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
 
     this._renderState();
   }
@@ -208,9 +203,4 @@ export default class HeapPriority extends Phaser.Scene {
     });
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('HeapPriority');
-  }
 }

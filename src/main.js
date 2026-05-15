@@ -1,7 +1,9 @@
 import Phaser from "phaser";
 import "./style.css";
+import { installCrtDomOverlay } from "./systems/CrtSystem.js";
 import BootScene        from "./scenes/BootScene.js";
 import MainMenuScene    from "./scenes/MainMenuScene.js";
+import CutsceneScene    from "./scenes/CutsceneScene.js";
 import GameScene        from "./scenes/GameScene.js";
 import UIScene          from "./scenes/UIScene.js";
 import ShatteredPad     from "./minigames/ShatteredPad.js";
@@ -32,6 +34,8 @@ import QueenGrid              from "./minigames/QueenGrid.js";
 import RouteOptimizer         from "./minigames/RouteOptimizer.js";
 import ComplexityGate         from "./minigames/ComplexityGate.js";
 
+installCrtDomOverlay();
+
 const config = {
   type: Phaser.AUTO,
   parent: "game",
@@ -53,7 +57,7 @@ const config = {
       debug: false,
     },
   },
-  scene: [BootScene, MainMenuScene, GameScene, UIScene, ShatteredPad, GuestList, ConsecutiveInt, MiddleSchool, SequentialSearch, MaxElement, ExhaustiveSearch, SelectionSort, BubbleSort, BiologicalClearance, InsertionSort, DFS, HyperTrain, BinarySearch, InterpolationSearch, QuickSort, IntergalacticCensus, HeapPriority, PreSort, ChangeMaking, CargoGrid, SpanningTree, HuffmanCode, ServerRouting, QueenGrid, RouteOptimizer, ComplexityGate],
+  scene: [BootScene, MainMenuScene, CutsceneScene, GameScene, UIScene, ShatteredPad, GuestList, ConsecutiveInt, MiddleSchool, SequentialSearch, MaxElement, ExhaustiveSearch, SelectionSort, BubbleSort, BiologicalClearance, InsertionSort, DFS, HyperTrain, BinarySearch, InterpolationSearch, QuickSort, IntergalacticCensus, HeapPriority, PreSort, ChangeMaking, CargoGrid, SpanningTree, HuffmanCode, ServerRouting, QueenGrid, RouteOptimizer, ComplexityGate],
 };
 
 new Phaser.Game(config);

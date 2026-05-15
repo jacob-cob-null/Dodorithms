@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 // BFS through the HyperTrain network — find shortest path from Central to Terminal
 //
@@ -86,7 +84,7 @@ const STEPS = [
   },
 ];
 
-export default class HyperTrain extends Phaser.Scene {
+export default class HyperTrain extends MinigameBase {
   constructor() {
     super('HyperTrain');
   }
@@ -102,7 +100,7 @@ export default class HyperTrain extends Phaser.Scene {
 
   create() {
     const W = 800, H = 600;
-    this.add.rectangle(W / 2, H / 2, W, H, 0x0d0a1f);
+    this.createTablet(this.algorithm?.name || 'HyperTrain');
 
     this.add.text(W / 2, 32, 'HyperTrain — Breadth-First Search', {
       fontFamily: 'sans-serif', fontSize: '22px', color: '#f8fafc',
@@ -181,10 +179,7 @@ export default class HyperTrain extends Phaser.Scene {
     // Mark Central as in-queue
     this._redrawNode('Central', 0xfbbf24, 0xf59e0b);
 
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
   }
 
   _redrawNode(id, fillColor, strokeColor) {
@@ -266,9 +261,4 @@ export default class HyperTrain extends Phaser.Scene {
     }
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('HyperTrain');
-  }
 }

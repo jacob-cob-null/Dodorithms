@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 // Insertion Sort: [4, 2, 7, 1, 5]
 // Each round: take the next key and click where it belongs in the sorted portion
@@ -14,7 +12,7 @@ const TILES_Y  = 265;
 const SLOT_W   = 18;
 const SLOT_H   = 38;
 
-export default class InsertionSort extends Phaser.Scene {
+export default class InsertionSort extends MinigameBase {
   constructor() {
     super('InsertionSort');
   }
@@ -30,7 +28,7 @@ export default class InsertionSort extends Phaser.Scene {
 
   create() {
     const W = 800, H = 600;
-    this.add.rectangle(W / 2, H / 2, W, H, 0x0d0a1f);
+    this.createTablet(this.algorithm?.name || 'InsertionSort');
 
     this.add.text(W / 2, 34, 'Departure Board — Insertion Sort', {
       fontFamily: 'sans-serif', fontSize: '22px', color: '#f8fafc',
@@ -73,10 +71,7 @@ export default class InsertionSort extends Phaser.Scene {
       fontFamily: 'sans-serif', fontSize: '12px', color: '#475569',
     }).setOrigin(0.5);
 
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
 
     this._refreshDisplay();
   }
@@ -153,6 +148,7 @@ export default class InsertionSort extends Phaser.Scene {
         `Not quite! ${key} belongs at slot ${correct}${correct === 0 ? ' (before all)' : ` (after ${this.arr[correct - 1]})`}.`
       );
       this.feedbackText.setStyle({ color: '#ef4444' });
+      this.playIncorrectSfx();
       this.cameras.main.shake(160, 0.005);
       return;
     }
@@ -199,9 +195,4 @@ export default class InsertionSort extends Phaser.Scene {
     });
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('InsertionSort');
-  }
 }

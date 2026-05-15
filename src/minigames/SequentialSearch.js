@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 const RECORDS = [
   { name: 'Zyx-7',    status: 'Earth Tourist',  valid: true  },
@@ -13,7 +11,7 @@ const RECORDS = [
   { name: 'Dorb',     status: 'Earth Tourist',  valid: true  },
 ];
 
-export default class SequentialSearch extends Phaser.Scene {
+export default class SequentialSearch extends MinigameBase {
   constructor() {
     super('SequentialSearch');
   }
@@ -28,7 +26,7 @@ export default class SequentialSearch extends Phaser.Scene {
   create() {
     const W = 800, H = 600;
 
-    this.add.rectangle(W / 2, H / 2, W, H, 0x0d1b2a);
+    this.createTablet(this.algorithm?.name || 'SequentialSearch');
 
     this.add.text(W / 2, 36, 'The Visa Fraud', {
       fontFamily: 'sans-serif', fontSize: '24px', color: '#f8fafc',
@@ -79,10 +77,7 @@ export default class SequentialSearch extends Phaser.Scene {
       wordWrap: { width: 680 }, align: 'center',
     }).setOrigin(0.5);
 
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
   }
 
   scanNext() {
@@ -111,6 +106,7 @@ export default class SequentialSearch extends Phaser.Scene {
       this.rowBgs[this.idx].setFillStyle(0x7f1d1d).setStrokeStyle(2, 0xef4444);
       this.rowObjs[this.idx].nameT.setStyle({ color: '#ef4444' });
       this.scanBtn.setAlpha(0);
+      this.playIncorrectSfx();
       this.cameras.main.shake(300, 0.01);
 
       this.feedbackText.setText(
@@ -132,9 +128,4 @@ export default class SequentialSearch extends Phaser.Scene {
     }
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('SequentialSearch');
-  }
 }

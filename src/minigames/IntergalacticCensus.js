@@ -1,6 +1,4 @@
-import Phaser from 'phaser';
-import EventBus from '../systems/EventBus.js';
-import { EVENTS } from '../systems/events.js';
+import MinigameBase from './MinigameBase.js';
 
 // Merge Sort — Merge two sorted star-system lists into one
 // Alpha: [3, 7, 11, 22, 35]
@@ -10,7 +8,7 @@ import { EVENTS } from '../systems/events.js';
 const ALPHA  = [3, 7, 11, 22, 35];
 const BETA   = [5, 9, 15, 27, 41];
 
-export default class IntergalacticCensus extends Phaser.Scene {
+export default class IntergalacticCensus extends MinigameBase {
   constructor() {
     super('IntergalacticCensus');
   }
@@ -26,7 +24,7 @@ export default class IntergalacticCensus extends Phaser.Scene {
 
   create() {
     const W = 800, H = 600;
-    this.add.rectangle(W / 2, H / 2, W, H, 0x050b18);
+    this.createTablet(this.algorithm?.name || 'IntergalacticCensus');
 
     // Title
     this.add.text(W / 2, 30, 'Intergalactic Census — Merge Sort', {
@@ -114,10 +112,7 @@ export default class IntergalacticCensus extends Phaser.Scene {
       wordWrap: { width: 680 }, align: 'center',
     }).setOrigin(0.5);
 
-    this.add.text(W - 10, H - 10, 'Skip', {
-      fontFamily: 'sans-serif', fontSize: '12px', color: '#334155',
-    }).setOrigin(1, 1).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.finish(false));
+    this.makeButton(704, 560, 'SKIP', () => this.finish(false), { w: 76, h: 26, fill: 0x1e1720, stroke: 0xef4444, textColor: '#fecaca', hoverFill: 0xef4444 });
 
     this._refreshCandidates();
   }
@@ -180,6 +175,7 @@ export default class IntergalacticCensus extends Phaser.Scene {
         `Wrong! ${list === 'alpha' ? aVal : bVal} is larger — pick the smaller one first.`
       );
       this.feedbackText.setStyle({ color: '#ef4444' });
+      this.playIncorrectSfx();
       this.cameras.main.shake(160, 0.006);
       return;
     }
@@ -252,9 +248,4 @@ export default class IntergalacticCensus extends Phaser.Scene {
     });
   }
 
-  finish(success) {
-    EventBus.emit(EVENTS.PUZZLE_COMPLETE, { success, algorithm: this.algorithm });
-    this.scene.resume('GameScene');
-    this.scene.stop('IntergalacticCensus');
-  }
 }

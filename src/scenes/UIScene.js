@@ -3,6 +3,7 @@ import DialogueSystem from "../systems/DialogueSystem.js";
 import archiveSystem from "../systems/ArchiveSystem.js";
 import EventBus from "../systems/EventBus.js";
 import { EVENTS } from "../systems/events.js";
+import { applyCrt } from "../systems/CrtSystem.js";
 
 const FONT_MONO = { fontFamily: '"Courier New", Courier, monospace' };
 const COL_CYAN  = '#38bdf8';
@@ -16,6 +17,8 @@ export default class UIScene extends Phaser.Scene {
   }
 
   create() {
+    applyCrt(this, { vignetteStrength: 0.08, contrast: 0.025, saturation: 0.025 });
+
     this.dialogueSystem      = new DialogueSystem(this);
     this.puzzleOverlay       = null;
     this.unlockCard          = null;
@@ -23,8 +26,10 @@ export default class UIScene extends Phaser.Scene {
     this.checklistOverlay    = null;
     this.inventoryPage       = 0;
     this.inventoryPageSize   = 6;
+    this._archiveButtonVisible = null;
 
     this.createTopButtons();
+    this.syncArchiveButtonVisibility();
 
     EventBus.on(EVENTS.OPEN_PUZZLE, (payload) => {
       this.openPuzzleOverlay(payload?.puzzle);
@@ -43,12 +48,40 @@ export default class UIScene extends Phaser.Scene {
 
   createTopButtons() {
     this.inventoryButton = this._makePixelButton(750, 14, 'Archive');
-    this.inventoryButton.on('pointerdown', () => this.toggleInventory());
+    this.inventoryButton.on('pointerdown', () => { this._playSfx('sfx_ui_click', { volume: 0.6 }); this.toggleInventory(); });
+  }
+
+  update() {
+    this.syncArchiveButtonVisibility();
+  }
+
+  syncArchiveButtonVisibility() {
+    if (!this.inventoryButton) return;
+
+    const mainMenuActive = this.scene.isActive('MainMenuScene');
+    const gameScene = this.scene.get('GameScene');
+    const gamePaused = typeof this.scene.isPaused === 'function' && this.scene.isPaused('GameScene');
+    const gameActive = this.scene.isActive('GameScene') || gamePaused;
+    const endScreenActive = gameActive && (gameScene?.isEndScreen || !gameScene?.currentLevel);
+    const shouldShow = gameActive && !mainMenuActive && !endScreenActive;
+
+    if (this._archiveButtonVisible === shouldShow) return;
+    this._archiveButtonVisible = shouldShow;
+
+    this.inventoryButton.setVisible(shouldShow);
+    this.inventoryButton.setActive(shouldShow);
+    if (this.inventoryButton.input) {
+      this.inventoryButton.input.enabled = shouldShow;
+    }
+
+    if (!shouldShow && this.inventoryOverlay) {
+      this.closeInventory();
+    }
   }
 
   _makePixelButton(x, y, label) {
     const W = label.length * 8 + 24;
-    const H = 22;
+    const H = 24;
     // Draw everything centered on origin so setSize hit area aligns with visuals
     const hw = W / 2, hh = H / 2;
 
@@ -57,7 +90,7 @@ export default class UIScene extends Phaser.Scene {
     const bg = this.add.graphics();
     this._drawBtnBg(bg, hw, hh, W, H, false);
 
-    const text = this.add.text(0, 0, label, {
+    const text = this.add.text(0, -1, label, {
       ...FONT_MONO, fontSize: '11px', color: COL_CYAN,
     }).setOrigin(0.5, 0.5);
 
@@ -231,6 +264,7 @@ export default class UIScene extends Phaser.Scene {
   openInventory() {
     if (this.inventoryOverlay) return;
     if (this.checklistOverlay) this.closeChecklist();
+    this._playSfx('sfx_panel_open', { volume: 0.6 });
 
     const { container, contentY, w, h } = this._openHologramTablet(
       'Algorithm Archive',
@@ -339,12 +373,12 @@ export default class UIScene extends Phaser.Scene {
 
     // Prev / Next buttons
     if (totalPages > 1) {
-      const prev = this._makePixelButton(-w / 2 + 80, h / 2 - 22, '< PREV');
-      const next = this._makePixelButton(-w / 2 + 180, h / 2 - 22, 'NEXT >');
+      const prev = this._makePixelButton(-w / 2 + 162, h / 2 - 22, '< PREV');
+      const next = this._makePixelButton(-w / 2 + 52, h / 2 - 22, 'NEXT >');
       prev.setVisible(this.inventoryPage > 0);
       next.setVisible(this.inventoryPage < totalPages - 1);
-      prev.on('pointerdown', () => { this.inventoryPage--; this._buildArchiveContent(); });
-      next.on('pointerdown', () => { this.inventoryPage++; this._buildArchiveContent(); });
+      prev.on('pointerdown', () => { this._playSfx('sfx_ui_click', { volume: 0.6 }); this.inventoryPage--; this._buildArchiveContent(); });
+      next.on('pointerdown', () => { this._playSfx('sfx_ui_click', { volume: 0.6 }); this.inventoryPage++; this._buildArchiveContent(); });
       c.add(prev); c.add(next);
       this._archiveContentNodes.push(prev, next);
     }
@@ -363,6 +397,7 @@ export default class UIScene extends Phaser.Scene {
 
   closeInventory() {
     if (!this.inventoryOverlay) return;
+    this._playSfx('sfx_panel_close', { volume: 0.6 });
     const ref = this.inventoryOverlay;
     this.inventoryOverlay = null;
     this._archiveContentNodes = null;
@@ -478,6 +513,7 @@ export default class UIScene extends Phaser.Scene {
 
   showAlgorithmUnlocked(algorithm) {
     if (this.unlockCard) { this.unlockCard.destroy(true); this.unlockCard = null; }
+    this._playSfx('sfx_puzzle_complete', { volume: 0.7 });
 
     const card = this.add.container(400, 0);
 
@@ -524,4 +560,9 @@ export default class UIScene extends Phaser.Scene {
   // ─────────────────────────────────────────────────────────────
 
   createButton(x, y, label) { return this._makePixelButton(x, y, label); }
+
+  _playSfx(key, config = {}) {
+    this.sound.stopByKey(key);
+    return this.sound.play(key, config);
+  }
 }
