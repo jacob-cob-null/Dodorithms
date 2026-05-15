@@ -49,6 +49,14 @@ export default class BootScene extends Phaser.Scene {
     this.load.image('npc_kyla',      'assets/npc_kyla.png');
     this.load.image('npc_professor', 'assets/npc_professor.png');
 
+    // NPC dialogue portraits (3 variations each: _a, _b, _c)
+    const PORTRAIT_NPCS = ['laurenze', 'trizy', 'jacob', 'kyla', 'professor'];
+    for (const npc of PORTRAIT_NPCS) {
+      for (const v of ['_a', '_b', '_c']) {
+        this.load.image(`portrait_${npc}${v}`, `assets/portrait_${npc}${v}.png`);
+      }
+    }
+
     const g = this.add.graphics();
 
     // ── Player fallback (used as 'player' key for physics body sizing) ──

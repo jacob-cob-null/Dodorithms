@@ -141,41 +141,25 @@ export const ASSET_MANIFEST = {
   //  NPC DIALOGUE PORTRAITS
   // ═══════════════════════════════════════════════════════
 
-  portrait_laurenze: {
-    placeholder: { shape: 'rect', color: 0xf59e0b, w: 52, h: 72 },
-    size: '104x144',
-    tool: 'Imagen 3',
-    prompt:
-      'pixel art character portrait, 16-bit style, visible square pixels, friendly adult male researcher, amber and orange jacket with glowing orange badge, short dark hair, kind confident expression, slight right-facing angle, bust shot, dark background with subtle amber glow, retro game sprite, crisp pixel edges, no smoothing',
-  },
-  portrait_trizy: {
-    placeholder: { shape: 'rect', color: 0x06b6d4, w: 52, h: 72 },
-    size: '104x144',
-    tool: 'Imagen 3',
-    prompt:
-      'pixel art character portrait, 16-bit style, visible square pixels, friendly adult female technician, dark uniform with cyan-glowing collar and teal badge, neat hair, bright enthusiastic expression, slight right-facing angle, bust shot, dark background with subtle cyan glow, retro game sprite, crisp pixel edges, no smoothing',
-  },
-  portrait_jacob: {
-    placeholder: { shape: 'rect', color: 0x22c55e, w: 52, h: 72 },
-    size: '104x144',
-    tool: 'Imagen 3',
-    prompt:
-      'pixel art character portrait, 16-bit style, visible square pixels, friendly young adult male biologist, dark lab coat with green glowing trim, glasses, messy hair, curious warm smile, slight right-facing angle, bust shot, dark background with subtle green glow, retro game sprite, crisp pixel edges, no smoothing',
-  },
-  portrait_kyla: {
-    placeholder: { shape: 'rect', color: 0xa855f7, w: 52, h: 72 },
-    size: '104x144',
-    tool: 'Imagen 3',
-    prompt:
-      'pixel art character portrait, 16-bit style, visible square pixels, friendly young adult female engineer, dark jacket with lavender neon trim and purple badge, ponytail, energetic cheerful expression, slight right-facing angle, bust shot, dark background with subtle lavender glow, retro game sprite, crisp pixel edges, no smoothing',
-  },
-  portrait_professor: {
-    placeholder: { shape: 'rect', color: 0xfbbf24, w: 52, h: 72 },
-    size: '104x144',
-    tool: 'Imagen 3',
-    prompt:
-      'pixel art character portrait, 16-bit style, visible square pixels, friendly older male professor, dark cardigan with warm yellow trim and glowing yellow lapel pin, white hair, round glasses, wise enthusiastic smile, slight right-facing angle, bust shot, dark background with subtle warm yellow glow, retro game sprite, crisp pixel edges, no smoothing',
-  },
+  portrait_laurenze_a: { placeholder: { shape: 'rect', color: 0xf59e0b, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
+  portrait_laurenze_b: { placeholder: { shape: 'rect', color: 0xf59e0b, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
+  portrait_laurenze_c: { placeholder: { shape: 'rect', color: 0xf59e0b, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
+
+  portrait_trizy_a: { placeholder: { shape: 'rect', color: 0x06b6d4, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
+  portrait_trizy_b: { placeholder: { shape: 'rect', color: 0x06b6d4, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
+  portrait_trizy_c: { placeholder: { shape: 'rect', color: 0x06b6d4, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
+
+  portrait_jacob_a: { placeholder: { shape: 'rect', color: 0x22c55e, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
+  portrait_jacob_b: { placeholder: { shape: 'rect', color: 0x22c55e, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
+  portrait_jacob_c: { placeholder: { shape: 'rect', color: 0x22c55e, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
+
+  portrait_kyla_a: { placeholder: { shape: 'rect', color: 0xa855f7, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
+  portrait_kyla_b: { placeholder: { shape: 'rect', color: 0xa855f7, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
+  portrait_kyla_c: { placeholder: { shape: 'rect', color: 0xa855f7, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
+
+  portrait_professor_a: { placeholder: { shape: 'rect', color: 0xfbbf24, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
+  portrait_professor_b: { placeholder: { shape: 'rect', color: 0xfbbf24, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
+  portrait_professor_c: { placeholder: { shape: 'rect', color: 0xfbbf24, w: 52, h: 72 }, size: '104x144', tool: 'Imagen 3' },
 
   // ═══════════════════════════════════════════════════════
   //  BACKGROUNDS (tiling or full scene)

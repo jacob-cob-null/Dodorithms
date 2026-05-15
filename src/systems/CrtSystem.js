@@ -1,7 +1,7 @@
 const DEFAULTS = {
-  barrel: 1.01,
+  barrel: 1.05,
   vignetteRadius: 0.8,
-  contrast: 0.045,
+  contrast: 0.2,
   saturation: 0.045,
 };
 

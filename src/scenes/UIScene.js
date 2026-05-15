@@ -60,7 +60,8 @@ export default class UIScene extends Phaser.Scene {
 
     const mainMenuActive = this.scene.isActive('MainMenuScene');
     const gameScene = this.scene.get('GameScene');
-    const gameActive = this.scene.isActive('GameScene') || this.scene.isPaused('GameScene');
+    const gamePaused = typeof this.scene.isPaused === 'function' && this.scene.isPaused('GameScene');
+    const gameActive = this.scene.isActive('GameScene') || gamePaused;
     const endScreenActive = gameActive && (gameScene?.isEndScreen || !gameScene?.currentLevel);
     const shouldShow = gameActive && !mainMenuActive && !endScreenActive;
 
@@ -371,8 +372,8 @@ export default class UIScene extends Phaser.Scene {
 
     // Prev / Next buttons
     if (totalPages > 1) {
-      const prev = this._makePixelButton(-w / 2 + 80, h / 2 - 22, '< PREV');
-      const next = this._makePixelButton(-w / 2 + 180, h / 2 - 22, 'NEXT >');
+      const prev = this._makePixelButton(-w / 2 + 162, h / 2 - 22, '< PREV');
+      const next = this._makePixelButton(-w / 2 + 52, h / 2 - 22, 'NEXT >');
       prev.setVisible(this.inventoryPage > 0);
       next.setVisible(this.inventoryPage < totalPages - 1);
       prev.on('pointerdown', () => { this.inventoryPage--; this._buildArchiveContent(); });
